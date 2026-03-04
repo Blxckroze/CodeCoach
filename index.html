@@ -171,7 +171,23 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
 .icard p { font-size: .85rem; color: var(--muted); font-family: var(--mono); line-height: 1.7; }
 .cs { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: .75rem 1rem; font-family: var(--mono); font-size: .85rem; color: var(--accent); margin-top: .75rem; word-break: break-all; }
 
-/* WELCOME BACK */
+/* REWARD UNLOCK */
+#reward-screen { position: fixed; inset: 0; background: rgba(10,10,15,.97); align-items: center; justify-content: center; z-index: 200; padding: 2rem; }
+.rbox { background: var(--surface); border: 2px solid var(--accent); border-radius: 24px; padding: 3rem; max-width: 500px; width: 100%; text-align: center; position: relative; overflow: hidden; }
+.rbox::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 0%, rgba(0,255,136,.12) 0%, transparent 70%); pointer-events: none; }
+.rtrophy { font-size: 4rem; margin-bottom: 1rem; animation: bounce 1s infinite alternate; }
+@keyframes bounce { from{transform:translateY(0)} to{transform:translateY(-10px)} }
+.rbox h2 { font-size: 1.75rem; font-weight: 800; color: var(--accent); margin-bottom: .5rem; }
+.rbox .rsub { color: var(--muted); font-family: var(--mono); font-size: .8rem; margin-bottom: 2rem; }
+.ropts { display: grid; gap: .75rem; margin-bottom: 1.5rem; text-align: left; }
+.ropt { padding: 1rem 1.25rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; transition: all .2s; }
+.ropt:hover, .ropt.sel { border-color: var(--accent); background: rgba(0,255,136,.08); }
+.ropt h4 { font-size: .9rem; font-weight: 700; margin-bottom: .2rem; color: var(--text); }
+.ropt p { font-size: .75rem; color: var(--muted); font-family: var(--mono); }
+.ropt.sel h4 { color: var(--accent); }
+.rdesc { width: 100%; padding: .875rem 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: var(--mono); font-size: .85rem; resize: none; outline: none; margin-bottom: 1rem; transition: border-color .2s; }
+.rdesc:focus { border-color: var(--accent); }
+.rsent { color: var(--accent); font-family: var(--mono); font-size: .85rem; margin-bottom: 1rem; display: none; }
 #wb { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--accent); border-radius: 14px; padding: 1rem 1.5rem; display: none; align-items: center; gap: 1.5rem; z-index: 50; box-shadow: 0 8px 32px rgba(0,255,136,.15); white-space: nowrap; }
 #wb p { font-family: var(--mono); font-size: .8rem; }
 #wb span.hi { color: var(--accent); font-weight: 700; }
@@ -290,6 +306,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
   <div class="tabs">
     <div class="tab on" onclick="swTab('overview',this)">Overview</div>
     <div class="tab" onclick="swTab('students',this)">Students</div>
+    <div class="tab" onclick="swTab('rewards',this)">🏆 Upgrades</div>
     <div class="tab" onclick="swTab('setup',this)">Setup Guide</div>
   </div>
   <div id="t-overview" class="tc on">
@@ -306,12 +323,49 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
     </table>
     <button class="bsm" onclick="loadStudents()" style="margin-top:1rem">🔄 Refresh</button>
   </div>
-  <div id="t-setup" class="tc">
+  <div id="t-rewards" class="tc">
+    <p style="font-family:var(--mono);font-size:.8rem;color:var(--muted);margin-bottom:1rem">Students who completed their track and claimed a free upgrade:</p>
+    <div id="rload" style="font-family:var(--mono);font-size:.85rem;color:var(--accent)">Loading requests...</div>
+    <div id="rlist"></div>
+    <button class="bsm" onclick="loadRewards()" style="margin-top:1rem">🔄 Refresh</button>
+  </div>
     <div class="icard"><h3>➕ Adding Students</h3><p>Open your Google Sheet → add row: Code | Name | Track | Class | Active<br>Use any code (STUD03, CC-005, initials — anything unique)<br>DM them the code on Skool → they enter it → done</p></div>
     <div class="icard"><h3>📋 Available Tracks</h3><p>AI Bot · Website · Game · Online Store · Mobile App · Discord Bot · Data Dashboard · Automation</p></div>
     <div class="icard"><h3>🔗 Your Apps Script URL</h3><div class="cs" style="font-size:.7rem">https://script.google.com/macros/s/AKfycbxiPLuLwzIrXOJImQbn7C1PSGHobtGNnuZ_YWHPmxl1t4UI9qcAJlwDwujxqpXj9J2_4Q/exec</div></div>
   </div>
   <button class="btn btn-s" onclick="showScreen('landing')" style="width:auto;padding:.6rem 1.5rem;margin-top:2rem">← Back to Home</button>
+</div>
+
+<!-- REWARD UNLOCK -->
+<div id="reward-screen" class="screen">
+  <div class="rbox">
+    <div class="rtrophy">🏆</div>
+    <h2>Track Complete!</h2>
+    <p class="rsub">// YOU'VE EARNED A FREE BOT UPGRADE</p>
+    <p style="font-size:.85rem;color:var(--text);margin-bottom:1.5rem;line-height:1.6">You finished the full track. As your reward, pick <strong style="color:var(--accent)">one free customization</strong> for your bot — your teacher will build it for you.</p>
+    <div class="ropts">
+      <div class="ropt" onclick="selectReward(this,'personality')">
+        <h4>🧠 Custom Personality</h4>
+        <p>Give your bot a unique character, tone, and style</p>
+      </div>
+      <div class="ropt" onclick="selectReward(this,'commands')">
+        <h4>⚡ Custom Commands</h4>
+        <p>Add special commands your bot responds to</p>
+      </div>
+      <div class="ropt" onclick="selectReward(this,'dataset')">
+        <h4>📚 Custom Dataset / Knowledge</h4>
+        <p>Feed your bot specific info — FAQ, your brand, your niche</p>
+      </div>
+      <div class="ropt" onclick="selectReward(this,'feature')">
+        <h4>🛠️ Custom Feature</h4>
+        <p>Something else — describe exactly what you want</p>
+      </div>
+    </div>
+    <textarea class="rdesc" id="rdesc" rows="3" placeholder="Describe what you want... (e.g. I want my bot to answer questions about fitness and always recommend my program)"></textarea>
+    <div class="rsent" id="rsent">✅ Request sent! Your teacher will DM you on Skool.</div>
+    <button class="btn btn-p" onclick="submitReward()">🚀 Claim My Upgrade</button>
+    <button class="btn btn-s" onclick="showScreen('student-dash')" style="margin-top:.75rem">Back to Dashboard</button>
+  </div>
 </div>
 
 <!-- WELCOME BACK -->
@@ -557,8 +611,13 @@ function completeLesson(){
   S.student.lessonIdx=Math.max(S.student.lessonIdx||0,S.curLesson+1);
   S.student.xp=(S.student.xp||0)+xp;
   saveLocal(); saveSheet();
-  document.getElementById("nxtbtn").style.display=S.curLesson<S.track.lessons.length-1?"block":"none";
-  showScreen("lesson-complete");
+  const isLastLesson=S.curLesson===S.track.lessons.length-1;
+  document.getElementById("nxtbtn").style.display=isLastLesson?"none":"block";
+  if(isLastLesson){
+    setTimeout(()=>showScreen("reward-screen"),800);
+  } else {
+    showScreen("lesson-complete");
+  }
 }
 
 function nextLesson(){
@@ -615,13 +674,46 @@ function finishQuiz(){
   document.getElementById("qnxt").style.display="none";
 }
 
-// ── TEACHER ──────────────────────────────────────────────────
+// ── REWARDS ──────────────────────────────────────────────────
+let selectedReward=null;
+function selectReward(el,type){
+  document.querySelectorAll(".ropt").forEach(r=>r.classList.remove("sel"));
+  el.classList.add("sel");
+  selectedReward=type;
+  const placeholders={
+    personality:"e.g. I want my bot to be a hype coach that always motivates and ends every message with a fire quote",
+    commands:"e.g. I want a !motivation command that sends a random quote, and a !goals command",
+    dataset:"e.g. I want my bot to know all about my Skool community, my program, and answer FAQs",
+    feature:"e.g. I want my bot to remember past conversations and greet users by name each time"
+  };
+  document.getElementById("rdesc").placeholder=placeholders[type]||"Describe what you want...";
+}
+async function submitReward(){
+  if(!selectedReward){alert("Pick an upgrade type first!");return;}
+  const desc=document.getElementById("rdesc").value.trim();
+  if(!desc){alert("Describe what you want so your teacher can build it!");return;}
+  const payload={
+    action:"reward",
+    code:S.student.code,
+    name:S.student.name,
+    track:S.student.track,
+    rewardType:selectedReward,
+    description:desc,
+    date:new Date().toLocaleDateString()
+  };
+  await sheetReq(payload);
+  document.getElementById("rsent").style.display="block";
+  document.querySelector("#reward-screen .btn-p").style.display="none";
+  document.querySelectorAll(".ropt").forEach(r=>r.style.pointerEvents="none");
+  document.getElementById("rdesc").disabled=true;
+}
 function swTab(name,el){
   document.querySelectorAll(".tab").forEach(t=>t.classList.remove("on"));
   document.querySelectorAll(".tc").forEach(t=>t.classList.remove("on"));
   el.classList.add("on");
   document.getElementById("t-"+name).classList.add("on");
   if(name==="students") loadStudents();
+  if(name==="rewards") loadRewards();
 }
 async function loadStudents(){
   const tbody=document.getElementById("stbody");
@@ -635,7 +727,24 @@ async function loadStudents(){
   tbl.style.display="table";
 }
 
-// ── PERSISTENCE ──────────────────────────────────────────────
+async function loadRewards(){
+  const rlist=document.getElementById("rlist");
+  const ld=document.getElementById("rload");
+  ld.style.display="block"; rlist.innerHTML="";
+  const res=await sheetReq({action:"allRewards"});
+  ld.style.display="none";
+  if(!res||!res.rewards||!res.rewards.length){ld.textContent="No upgrade requests yet — students need to complete their full track first!";ld.style.display="block";return;}
+  rlist.innerHTML=res.rewards.map(r=>`
+    <div class="icard" style="margin-bottom:1rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+        <h3 style="color:var(--accent)">${r.name||"?"} <span style="color:var(--muted);font-size:.75rem">(${r.code||"?"})</span></h3>
+        <span style="font-family:var(--mono);font-size:.7rem;color:var(--muted)">${r.date||""}</span>
+      </div>
+      <p style="font-family:var(--mono);font-size:.75rem;color:var(--accent2);margin-bottom:.5rem">🏆 ${r.rewardType||"?"} · ${r.track||"?"}</p>
+      <p style="font-size:.85rem;color:var(--text);line-height:1.6">${r.description||"No description"}</p>
+    </div>
+  `).join("");
+}
 function saveLocal(){try{localStorage.setItem("cc_s",JSON.stringify(S.student));}catch(e){}}
 function loadLocal(){
   try{
