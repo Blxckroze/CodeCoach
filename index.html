@@ -171,7 +171,20 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
 .icard p { font-size: .85rem; color: var(--muted); font-family: var(--mono); line-height: 1.7; }
 .cs { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: .75rem 1rem; font-family: var(--mono); font-size: .85rem; color: var(--accent); margin-top: .75rem; word-break: break-all; }
 
-/* REWARD UNLOCK */
+/* PRE-LESSON READING */
+#lesson-intro { min-height: 100vh; padding: 2rem; max-width: 800px; margin: 0 auto; }
+.intro-hdr { margin-bottom: 2rem; }
+.intro-hdr .step { font-family: var(--mono); font-size: .75rem; color: var(--accent); letter-spacing: 2px; margin-bottom: .5rem; }
+.intro-hdr h2 { font-size: 1.75rem; font-weight: 800; margin-bottom: .25rem; }
+.intro-hdr p { color: var(--muted); font-family: var(--mono); font-size: .8rem; }
+.intro-section { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.75rem; margin-bottom: 1.25rem; }
+.intro-section h3 { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; }
+.intro-section p { font-size: .9rem; color: var(--text); line-height: 1.8; }
+.def-grid { display: grid; gap: .75rem; margin-top: .5rem; }
+.def-item { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; display: grid; grid-template-columns: auto 1fr; gap: .75rem; align-items: start; }
+.def-key { font-family: var(--mono); font-size: .85rem; color: var(--accent); background: rgba(0,255,136,.08); padding: .25rem .6rem; border-radius: 6px; white-space: nowrap; }
+.def-val { font-size: .85rem; color: var(--muted); line-height: 1.6; font-family: var(--mono); }
+.intro-footer { display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap; }
 #reward-screen { position: fixed; inset: 0; background: rgba(10,10,15,.97); align-items: center; justify-content: center; z-index: 200; padding: 2rem; }
 .rbox { background: var(--surface); border: 2px solid var(--accent); border-radius: 24px; padding: 3rem; max-width: 500px; width: 100%; text-align: center; position: relative; overflow: hidden; }
 .rbox::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 0%, rgba(0,255,136,.12) 0%, transparent 70%); pointer-events: none; }
@@ -283,7 +296,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
       <div class="si"><div class="v" id="sxp">+50</div><div class="l">XP EARNED</div></div>
       <div class="si"><div class="v" id="sch">0</div><div class="l">CHARS</div></div>
     </div>
-    <button class="btn btn-p" id="nxtbtn" onclick="nextLesson()">Next Lesson →</button>
+    <button class="btn btn-p" id="nxtbtn" onclick="goToLessonQuiz()">Take the Quiz 🧠</button>
     <button class="btn btn-s" onclick="showScreen('student-dash')" style="margin-top:.75rem">Back to Dashboard</button>
   </div>
 </div>
@@ -336,6 +349,27 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
   <button class="btn btn-s" onclick="showScreen('landing')" style="width:auto;padding:.6rem 1.5rem;margin-top:2rem">← Back to Home</button>
 </div>
 
+<!-- PRE-LESSON INTRO -->
+<div id="lesson-intro" class="screen">
+  <div class="intro-hdr">
+    <div class="step" id="intro-step">STEP 1 OF 3 · READ FIRST</div>
+    <h2 id="intro-title">Lesson Title</h2>
+    <p id="intro-desc">Lesson description</p>
+  </div>
+  <div class="intro-section">
+    <h3>🎯 What You're Building</h3>
+    <p id="intro-goal">Loading...</p>
+  </div>
+  <div class="intro-section">
+    <h3>🔑 Key Terms — Know These Before You Type</h3>
+    <div class="def-grid" id="intro-defs"></div>
+  </div>
+  <div class="intro-footer">
+    <button class="btn btn-p" style="width:auto;padding:.875rem 2rem" onclick="goToTyping()">Ready — Start Typing ⌨️</button>
+    <button class="btn btn-s" style="width:auto;padding:.875rem 1.5rem" onclick="showScreen('student-dash')">← Back</button>
+  </div>
+</div>
+
 <!-- REWARD UNLOCK -->
 <div id="reward-screen" class="screen">
   <div class="rbox">
@@ -386,6 +420,16 @@ const TRACKS = {
     icon:"🤖", lang:"python",
     lessons:[
       { title:"Python Basics", desc:"Variables, print, strings",
+        intro:{
+          goal:"You're going to write your first Python code — setting up variables that store information about your bot, then printing them to the screen. This is the foundation everything else is built on.",
+          defs:[
+            {k:"variable",v:"A named container that stores a value. Like a label on a box."},
+            {k:"print()",v:"A built-in function that displays output to the screen."},
+            {k:"string",v:"Text data wrapped in quotes. e.g. \"hello\""},
+            {k:"boolean",v:"A True or False value. Used to represent on/off states."},
+            {k:'f-string',v:'A string that lets you inject variables directly: f"Hello {name}"'},
+          ]
+        },
         code:"name = \"CodeCoach\"\nversion = 1.0\nis_ready = True\n\nprint(\"Welcome to\", name)\nprint(\"Version:\", version)\nprint(\"Ready:\", is_ready)\n\nmessage = f\"Hello from {name} v{version}\"\nprint(message)",
         quiz:[
           {q:"What does print() do?",opts:["Saves to file","Outputs to screen","Creates a variable","Imports a module"],ans:1,exp:"print() displays output to the screen."},
@@ -394,6 +438,16 @@ const TRACKS = {
         ]
       },
       { title:"Functions", desc:"def, parameters, return",
+        intro:{
+          goal:"You're going to write reusable blocks of code called functions. Instead of writing the same code over and over, you define it once and call it whenever you need it. Your bot will be made of functions.",
+          defs:[
+            {k:"def",v:"The keyword that starts a function definition. Short for 'define'."},
+            {k:"parameter",v:"An input variable that a function accepts. Goes inside the parentheses."},
+            {k:"return",v:"Sends a value back out of the function to whoever called it."},
+            {k:"calling a function",v:"Running a function by writing its name with parentheses: greet('Chris')"},
+            {k:"indentation",v:"The spaces before code inside a function. Python requires exactly 4 spaces."},
+          ]
+        },
         code:"def greet(name):\n    message = f\"Hello, {name}!\"\n    return message\n\ndef add(a, b):\n    return a + b\n\nresult = greet(\"Chris\")\nprint(result)\n\ntotal = add(10, 25)\nprint(\"Total:\", total)",
         quiz:[
           {q:"What keyword defines a function?",opts:["func","function","def","fn"],ans:2,exp:"def is the keyword to define a function in Python."},
@@ -402,6 +456,16 @@ const TRACKS = {
         ]
       },
       { title:"Install Ollama", desc:"Set up your local AI",
+        intro:{
+          goal:"You're going to set up Ollama — the tool that lets your bot run a real AI model completely offline on your computer. No API keys, no monthly fees. Just you and your machine.",
+          defs:[
+            {k:"Ollama",v:"A free tool that downloads and runs AI models locally on your computer."},
+            {k:"model",v:"The actual AI brain — llama3.2 is a powerful open-source model from Meta."},
+            {k:"ollama pull",v:"Terminal command that downloads a model to your computer."},
+            {k:"import",v:"Loads an external library into your Python file so you can use it."},
+            {k:"ollama.chat()",v:"The function that sends a message to the AI and gets a response back."},
+          ]
+        },
         code:"# Run in your terminal:\n# 1. Download Ollama from ollama.com\n# 2. Install it\n# 3. Pull the model:\n#    ollama pull llama3.2\n# 4. Test it:\n#    ollama run llama3.2\n# 5. Install Python library:\n#    pip install ollama\n\nimport ollama\n\nresponse = ollama.chat(\n    model=\"llama3.2\",\n    messages=[{\"role\":\"user\",\"content\":\"Say hello!\"}]\n)\nprint(response[\"message\"][\"content\"])",
         quiz:[
           {q:"What is Ollama?",opts:["A cloud AI service","A tool to run AI locally","A Python library only","A database"],ans:1,exp:"Ollama lets you run AI models locally — no API fees."},
@@ -410,6 +474,16 @@ const TRACKS = {
         ]
       },
       { title:"Chat Loop", desc:"Build the conversation engine",
+        intro:{
+          goal:"You're building the core engine of your bot — a loop that keeps the conversation going. The bot waits for input, sends it to the AI, prints the reply, then waits again. This is what makes it feel like a real chat.",
+          defs:[
+            {k:"while True",v:"A loop that runs forever until you explicitly stop it with break."},
+            {k:"break",v:"Exits the loop immediately. Used when the user types 'quit'."},
+            {k:"input()",v:"Pauses the program and waits for the user to type something."},
+            {k:"history",v:"A list of all messages sent so far. Lets the AI remember the conversation."},
+            {k:".lower()",v:"Converts a string to lowercase. Lets 'Quit' and 'QUIT' both work."},
+          ]
+        },
         code:"import ollama\n\ndef chat_with_bot():\n    print(\"Bot ready! Type quit to exit.\")\n    history = []\n\n    while True:\n        user_input = input(\"You: \")\n\n        if user_input.lower() == \"quit\":\n            print(\"Goodbye!\")\n            break\n\n        history.append({\n            \"role\": \"user\",\n            \"content\": user_input\n        })\n\n        response = ollama.chat(\n            model=\"llama3.2\",\n            messages=history\n        )\n\n        reply = response[\"message\"][\"content\"]\n        print(f\"Bot: {reply}\")\n\n        history.append({\n            \"role\": \"assistant\",\n            \"content\": reply\n        })\n\nchat_with_bot()",
         quiz:[
           {q:"What does while True do?",opts:["Runs once","Loops forever until break","Checks a condition","Calls a function"],ans:1,exp:"while True creates an infinite loop that only stops when break is called."},
@@ -418,6 +492,16 @@ const TRACKS = {
         ]
       },
       { title:"Bot Personality", desc:"Give your bot a character",
+        intro:{
+          goal:"You're going to give your bot a real identity using a system prompt. This is the secret instruction you give the AI before the conversation starts — it shapes everything about how it talks, what it knows, and how it behaves.",
+          defs:[
+            {k:"system prompt",v:"A hidden instruction sent to the AI first that defines its personality and rules."},
+            {k:"role: system",v:"The message type that sets the AI's behavior. Must be the first message in history."},
+            {k:'triple quotes """',v:"Python syntax for a multi-line string. Perfect for writing long prompts."},
+            {k:"persona",v:"The character your bot plays — name, tone, expertise, style."},
+            {k:"context",v:"Background info the AI needs to respond correctly — like who it is and what it does."},
+          ]
+        },
         code:"import ollama\n\nSYSTEM_PROMPT = \"\"\"You are CodeBot, a friendly coding tutor.\nYou explain code clearly and encourage learners.\nKeep answers short and use simple examples.\nAlways be positive and patient.\"\"\"\n\ndef chat_with_bot(name=\"Student\"):\n    print(f\"CodeBot: Hey {name}! Ready to learn?\")\n    history = [{\"role\": \"system\", \"content\": SYSTEM_PROMPT}]\n\n    while True:\n        user_input = input(\"You: \")\n        if user_input.lower() == \"quit\":\n            print(\"CodeBot: Great session!\")\n            break\n        history.append({\"role\": \"user\", \"content\": user_input})\n        response = ollama.chat(model=\"llama3.2\", messages=history)\n        reply = response[\"message\"][\"content\"]\n        print(f\"CodeBot: {reply}\")\n        history.append({\"role\": \"assistant\", \"content\": reply})\n\nname = input(\"Your name: \")\nchat_with_bot(name)",
         quiz:[
           {q:"What is a system prompt?",opts:["User message","Bot personality instructions","An error message","A Python function"],ans:1,exp:"A system prompt gives the AI its personality and behavior rules."},
@@ -426,6 +510,16 @@ const TRACKS = {
         ]
       },
       { title:"Final Project", desc:"Your complete working bot",
+        intro:{
+          goal:"This is it — you're assembling everything into one complete, production-ready bot. Variables, functions, a loop, a system prompt, and error handling all working together. When you finish typing this, you'll have a real AI bot you built yourself.",
+          defs:[
+            {k:".strip()",v:"Removes extra spaces from the start and end of a string."},
+            {k:"try / except",v:"Catches errors so your bot doesn't crash. Like a safety net around your code."},
+            {k:"KeyboardInterrupt",v:"The error triggered when someone presses Ctrl+C. You can catch it for a clean exit."},
+            {k:"f-string with =*40",v:"Repeats the = character 40 times to draw a divider line in the terminal."},
+            {k:"continue",v:"Skips the rest of the loop and starts the next iteration. Used to ignore empty input."},
+          ]
+        },
         code:"import ollama\nimport datetime\n\nBOT_NAME = \"MyBot\"\nYOUR_NAME = \"Coder\"\n\nSYSTEM_PROMPT = f\"\"\"You are {BOT_NAME}, a helpful assistant.\nYou are friendly, concise, and knowledgeable.\nCurrent date: {datetime.date.today()}\nHelp the user with any questions.\"\"\"\n\ndef run_bot():\n    print(f\"{'='*40}\")\n    print(f\"  Welcome to {BOT_NAME}!\")\n    print(f\"  Powered by Llama (100% offline)\")\n    print(f\"{'='*40}\")\n    history = [{\"role\": \"system\", \"content\": SYSTEM_PROMPT}]\n    count = 0\n    while True:\n        try:\n            user_input = input(f\"{YOUR_NAME}: \").strip()\n            if not user_input:\n                continue\n            if user_input.lower() in [\"quit\",\"exit\",\"bye\"]:\n                print(f\"{BOT_NAME}: Goodbye!\")\n                break\n            history.append({\"role\":\"user\",\"content\":user_input})\n            response = ollama.chat(model=\"llama3.2\", messages=history)\n            reply = response[\"message\"][\"content\"]\n            print(f\"{BOT_NAME}: {reply}\")\n            history.append({\"role\":\"assistant\",\"content\":reply})\n            count += 1\n        except KeyboardInterrupt:\n            print(f\"\\n{BOT_NAME}: See you!\")\n            break\n    print(f\"\\nMessages: {count}\")\n\nrun_bot()",
         quiz:[
           {q:"What does .strip() do?",opts:["Removes letters","Removes extra spaces","Makes uppercase","Splits string"],ans:1,exp:".strip() removes leading and trailing whitespace."},
@@ -554,7 +648,25 @@ function loadDash(){
 function startLesson(idx){
   S.curLesson=idx; S.typed=""; S.hints=3;
   const l=S.track.lessons[idx];
-  document.getElementById("ltitle").textContent="Lesson "+(idx+1)+": "+l.title;
+  const total=S.track.lessons.length;
+  // Show intro screen first
+  document.getElementById("intro-step").textContent=`LESSON ${idx+1} OF ${total} · READ FIRST`;
+  document.getElementById("intro-title").textContent=l.title;
+  document.getElementById("intro-desc").textContent=l.desc;
+  document.getElementById("intro-goal").textContent=l.intro?l.intro.goal:"Get ready to type this lesson. Read the code carefully before you start.";
+  const defsEl=document.getElementById("intro-defs");
+  defsEl.innerHTML="";
+  if(l.intro&&l.intro.defs){
+    l.intro.defs.forEach(d=>{
+      defsEl.innerHTML+=`<div class="def-item"><span class="def-key">${d.k}</span><span class="def-val">${d.v}</span></div>`;
+    });
+  }
+  showScreen("lesson-intro");
+}
+
+function goToTyping(){
+  const l=S.track.lessons[S.curLesson];
+  document.getElementById("ltitle").textContent="Lesson "+(S.curLesson+1)+": "+l.title;
   document.getElementById("llang").textContent=S.track.lang;
   document.getElementById("thn").textContent="3";
   renderCode();
@@ -620,6 +732,13 @@ function completeLesson(){
   }
 }
 
+function goToLessonQuiz(){
+  // Quiz just for this lesson
+  S.quizIdx=0; S.quizScore=0; S.allQ=[];
+  const l=S.track.lessons[S.curLesson];
+  if(l.quiz) l.quiz.forEach(q=>S.allQ.push(q));
+  showScreen("quiz-screen"); renderQuiz();
+}
 function nextLesson(){
   if(S.curLesson<S.track.lessons.length-1) startLesson(S.curLesson+1);
   else loadDash();
@@ -670,8 +789,12 @@ function finishQuiz(){
   S.student.xp=(S.student.xp||0)+xp; saveLocal(); saveSheet();
   document.getElementById("qq").textContent="Quiz done! "+S.quizScore+"/"+S.allQ.length+" ("+pct+"%) — +"+xp+" XP!";
   document.getElementById("qopts").innerHTML="";
-  document.getElementById("qfb").textContent=pct>=70?"Great job! You passed!":"Keep practicing — you got this!";
-  document.getElementById("qnxt").style.display="none";
+  document.getElementById("qfb").textContent=pct>=70?"Great job! You passed! 🎉":"Keep practicing — you got this!";
+  const nxt=document.getElementById("qnxt");
+  const isLast=S.curLesson>=S.track.lessons.length-1;
+  nxt.textContent=isLast?"See Your Reward 🏆":"Next Lesson →";
+  nxt.style.display="block";
+  nxt.onclick=isLast?()=>showScreen("reward-screen"):()=>nextLesson();
 }
 
 // ── REWARDS ──────────────────────────────────────────────────
