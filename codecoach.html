@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeCoach</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #12121a;
+  --surface2: #1a1a28;
+  --border: #2a2a3a;
+  --accent: #00ff88;
+  --accent2: #7c3aed;
+  --text: #e8e8f0;
+  --muted: #6b6b80;
+  --danger: #ff4466;
+  --mono: 'Space Mono', monospace;
+  --sans: 'Syne', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
+.screen { display: none; }
+.screen.active { display: block; }
+#landing.active { display: flex; }
+#student-login.active, #lesson-complete.active, #quiz-screen.active { display: flex; }
+
+/* LANDING */
+#landing {
+  min-height: 100vh; flex-direction: column; align-items: center;
+  justify-content: center; padding: 2rem; position: relative;
+}
+#landing::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 20% 50%, rgba(124,58,237,0.15) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 20%, rgba(0,255,136,0.1) 0%, transparent 50%);
+}
+.logo h1 {
+  font-size: clamp(3rem,8vw,6rem); font-weight: 800; letter-spacing: -3px;
+  background: linear-gradient(135deg,#fff 0%,var(--accent) 50%,var(--accent2) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1;
+  text-align: center;
+}
+.logo p { color: var(--muted); font-family: var(--mono); font-size: .85rem; text-align: center; margin-top: .75rem; letter-spacing: 2px; }
+.cards { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; margin-top: 3rem; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  padding: 2rem; width: 200px; cursor: pointer; transition: all .3s; text-align: center;
+}
+.card:hover { transform: translateY(-4px); border-color: var(--accent); }
+.card .icon { font-size: 2.5rem; margin-bottom: 1rem; }
+.card h3 { font-size: 1rem; font-weight: 700; margin-bottom: .5rem; }
+.card p { font-size: .75rem; color: var(--muted); font-family: var(--mono); line-height: 1.5; }
+
+/* LOGIN */
+#student-login { min-height: 100vh; align-items: center; justify-content: center; padding: 2rem; }
+.login-box {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+  padding: 3rem; width: 100%; max-width: 420px; text-align: center;
+}
+.login-box h2 { font-size: 1.75rem; font-weight: 800; margin-bottom: .5rem; }
+.login-box > p { color: var(--muted); font-family: var(--mono); font-size: .8rem; margin-bottom: 2rem; }
+.ig { margin-bottom: 1rem; text-align: left; }
+.ig label { display: block; font-size: .75rem; font-family: var(--mono); color: var(--muted); margin-bottom: .5rem; letter-spacing: 1px; }
+.ig input {
+  width: 100%; padding: .875rem 1rem; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text); font-family: var(--mono); font-size: 1rem;
+  transition: border-color .2s; outline: none;
+}
+.ig input:focus { border-color: var(--accent); }
+.btn { width: 100%; padding: .875rem; border: none; border-radius: 10px; font-family: var(--sans); font-size: 1rem; font-weight: 700; cursor: pointer; transition: all .2s; margin-top: .5rem; }
+.btn-p { background: var(--accent); color: #000; }
+.btn-p:hover { background: #00cc6a; transform: translateY(-1px); }
+.btn-s { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn-s:hover { border-color: var(--accent); }
+.err { color: var(--danger); font-family: var(--mono); font-size: .8rem; margin-top: .75rem; display: none; }
+.loading { color: var(--accent); font-family: var(--mono); font-size: .8rem; margin-top: .75rem; display: none; }
+
+/* STUDENT DASH */
+#student-dash { min-height: 100vh; padding: 2rem; max-width: 900px; margin: 0 auto; }
+.dh { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+.dh h2 { font-size: 1.5rem; font-weight: 800; }
+.xpw { flex: 1; max-width: 300px; }
+.xpl { font-family: var(--mono); font-size: .7rem; color: var(--muted); margin-bottom: .3rem; display: flex; justify-content: space-between; }
+.xpb { height: 8px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+.xpf { height: 100%; background: linear-gradient(90deg,var(--accent2),var(--accent)); border-radius: 99px; transition: width .5s; }
+.tbadge { display: inline-flex; align-items: center; gap: .5rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 99px; padding: .4rem 1rem; font-family: var(--mono); font-size: .8rem; color: var(--accent); }
+.lgrid { display: grid; gap: 1rem; margin-top: 1.5rem; }
+.lcard {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+  padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 1rem;
+  cursor: pointer; transition: all .2s; position: relative;
+}
+.lcard:hover:not(.locked) { border-color: var(--accent); transform: translateX(4px); }
+.lcard.locked { opacity: .5; cursor: not-allowed; }
+.lcard.done { border-color: var(--accent); }
+.lcard.done::after { content: '✓'; position: absolute; right: 1.5rem; color: var(--accent); font-size: 1.2rem; font-weight: 700; }
+.lnum { width: 36px; height: 36px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: .8rem; flex-shrink: 0; }
+.lcard.done .lnum { background: var(--accent); color: #000; border-color: var(--accent); }
+.linfo h4 { font-size: .95rem; font-weight: 700; margin-bottom: .2rem; }
+.linfo p { font-size: .75rem; color: var(--muted); font-family: var(--mono); }
+
+/* TYPING LESSON */
+#typing-lesson { min-height: 100vh; padding: 2rem; max-width: 1100px; margin: 0 auto; }
+.lhdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+.ltitle { font-size: 1.25rem; font-weight: 800; }
+.lmeta { display: flex; gap: 1rem; font-family: var(--mono); font-size: .8rem; color: var(--muted); }
+.tarea { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+@media(max-width:700px){.tarea{grid-template-columns:1fr}}
+.cpanel, .ipanel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+.phdr { padding: .75rem 1rem; background: var(--surface2); border-bottom: 1px solid var(--border); font-family: var(--mono); font-size: .75rem; color: var(--muted); display: flex; justify-content: space-between; }
+.pbody { padding: 1.25rem; min-height: 320px; }
+.cdisplay { font-family: var(--mono); font-size: .85rem; line-height: 1.8; white-space: pre; overflow-x: auto; }
+.cl { display: block; padding: 1px 0; }
+.cl.cur { background: rgba(0,255,136,.08); border-left: 2px solid var(--accent); padding-left: 6px; margin-left: -8px; }
+.cp { color: var(--muted); }
+.cc { color: var(--accent); }
+.cw { color: var(--danger); background: rgba(255,68,102,.15); }
+.cx { border-left: 2px solid var(--accent); animation: blink 1s infinite; }
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.tinput { width: 100%; height: 320px; background: transparent; border: none; outline: none; color: var(--text); font-family: var(--mono); font-size: .85rem; line-height: 1.8; resize: none; caret-color: var(--accent); white-space: pre; padding: 1.25rem; }
+.pbw { margin-top: 1rem; }
+.pbl { font-family: var(--mono); font-size: .7rem; color: var(--muted); margin-bottom: .3rem; display: flex; justify-content: space-between; }
+.pb { height: 6px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+.pf { height: 100%; background: linear-gradient(90deg,var(--accent2),var(--accent)); border-radius: 99px; transition: width .3s; }
+.bsm { padding: .5rem 1.25rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font-family: var(--sans); font-size: .85rem; font-weight: 600; cursor: pointer; transition: all .2s; }
+.bsm:hover { border-color: var(--accent); color: var(--accent); }
+.bsm.ac { background: var(--accent); color: #000; border-color: var(--accent); }
+
+/* COMPLETE */
+#lesson-complete { position: fixed; inset: 0; background: rgba(10,10,15,.95); align-items: center; justify-content: center; z-index: 100; padding: 2rem; }
+.cbox { background: var(--surface); border: 1px solid var(--accent); border-radius: 20px; padding: 3rem; text-align: center; max-width: 420px; width: 100%; }
+.cbox h2 { font-size: 2rem; font-weight: 800; color: var(--accent); margin-bottom: .5rem; }
+.cbox > p { color: var(--muted); font-family: var(--mono); font-size: .85rem; margin-bottom: 1.5rem; }
+.srow { display: flex; justify-content: center; gap: 2rem; margin-bottom: 2rem; }
+.si .v { font-size: 2rem; font-weight: 800; color: var(--accent); font-family: var(--mono); }
+.si .l { font-size: .7rem; color: var(--muted); font-family: var(--mono); }
+
+/* QUIZ */
+#quiz-screen { min-height: 100vh; align-items: center; justify-content: center; padding: 2rem; }
+.qbox { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 2.5rem; max-width: 560px; width: 100%; }
+.qbox h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 1.5rem; line-height: 1.5; }
+.qopts { display: grid; gap: .75rem; margin-bottom: 1.5rem; }
+.qopt { padding: .875rem 1rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; font-family: var(--mono); font-size: .85rem; transition: all .2s; text-align: left; }
+.qopt:hover { border-color: var(--accent); color: var(--accent); }
+.qopt.ok { border-color: var(--accent); background: rgba(0,255,136,.1); color: var(--accent); }
+.qopt.no { border-color: var(--danger); background: rgba(255,68,102,.1); color: var(--danger); }
+.qfb { font-family: var(--mono); font-size: .8rem; color: var(--muted); min-height: 1.2rem; margin-bottom: 1rem; }
+.qprog { font-family: var(--mono); font-size: .75rem; color: var(--muted); margin-bottom: 1rem; }
+
+/* TEACHER */
+#teacher-dash { min-height: 100vh; padding: 2rem; max-width: 1000px; margin: 0 auto; }
+.thdr { margin-bottom: 2rem; }
+.thdr h2 { font-size: 2rem; font-weight: 800; margin-bottom: .25rem; }
+.thdr p { color: var(--muted); font-family: var(--mono); font-size: .8rem; }
+.tabs { display: flex; gap: .5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+.tab { padding: .5rem 1.25rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--muted); font-family: var(--mono); font-size: .8rem; cursor: pointer; transition: all .2s; }
+.tab.on { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700; }
+.tc { display: none; }
+.tc.on { display: block; }
+.stbl { width: 100%; border-collapse: collapse; }
+.stbl th,.stbl td { padding: .75rem 1rem; text-align: left; border-bottom: 1px solid var(--border); font-family: var(--mono); font-size: .8rem; }
+.stbl th { color: var(--muted); font-size: .7rem; letter-spacing: 1px; }
+.stbl tr:hover td { background: var(--surface2); }
+.sbadge { display: inline-block; padding: .2rem .6rem; border-radius: 99px; font-size: .7rem; font-family: var(--mono); }
+.sa { background: rgba(0,255,136,.15); color: var(--accent); }
+.si2 { background: rgba(107,107,128,.2); color: var(--muted); }
+.icard { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; margin-bottom: 1rem; }
+.icard h3 { font-size: 1rem; font-weight: 700; margin-bottom: .5rem; }
+.icard p { font-size: .85rem; color: var(--muted); font-family: var(--mono); line-height: 1.7; }
+.cs { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: .75rem 1rem; font-family: var(--mono); font-size: .85rem; color: var(--accent); margin-top: .75rem; word-break: break-all; }
+
+/* WELCOME BACK */
+#wb { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--accent); border-radius: 14px; padding: 1rem 1.5rem; display: none; align-items: center; gap: 1.5rem; z-index: 50; box-shadow: 0 8px 32px rgba(0,255,136,.15); white-space: nowrap; }
+#wb p { font-family: var(--mono); font-size: .8rem; }
+#wb span.hi { color: var(--accent); font-weight: 700; }
+</style>
+</head>
+<body>
+
+<!-- LANDING -->
+<div id="landing" class="screen active">
+  <div class="logo">
+    <h1>CodeCoach</h1>
+    <p>// LEARN BY TYPING. RETAIN BY DOING.</p>
+  </div>
+  <div class="cards">
+    <div class="card" onclick="showScreen('teacher-dash')">
+      <div class="icon">🎓</div><h3>Teacher</h3><p>Dashboard &amp; student progress</p>
+    </div>
+    <div class="card" onclick="showScreen('student-login')">
+      <div class="icon">🧑‍💻</div><h3>Student</h3><p>Enter your personal code</p>
+    </div>
+    <div class="card" onclick="startSolo()">
+      <div class="icon">🚀</div><h3>Self-Learn</h3><p>No code needed</p>
+    </div>
+  </div>
+</div>
+
+<!-- STUDENT LOGIN -->
+<div id="student-login" class="screen">
+  <div class="login-box">
+    <h2>Welcome 👋</h2>
+    <p>// ENTER YOUR CODE FROM YOUR TEACHER</p>
+    <div class="ig"><label>YOUR NAME</label><input id="ln" type="text" placeholder="e.g. Chris"></div>
+    <div class="ig"><label>STUDENT CODE</label><input id="lc" type="text" placeholder="e.g. STUD01" style="text-transform:uppercase"></div>
+    <button class="btn btn-p" onclick="doLogin()">Let's Code →</button>
+    <button class="btn btn-s" onclick="showScreen('landing')" style="margin-top:.75rem">← Back</button>
+    <div class="err" id="lerr">Code not found. Check with your teacher.</div>
+    <div class="loading" id="lload">⏳ Looking you up...</div>
+  </div>
+</div>
+
+<!-- STUDENT DASH -->
+<div id="student-dash" class="screen">
+  <div class="dh">
+    <div><h2 id="dgreet">Hey there 👋</h2><div class="tbadge" id="dtrack">📍 Loading...</div></div>
+    <div class="xpw">
+      <div class="xpl"><span>XP</span><span id="xpc">0</span></div>
+      <div class="xpb"><div class="xpf" id="xpf" style="width:0%"></div></div>
+    </div>
+  </div>
+  <div class="lgrid" id="lgrid"></div>
+</div>
+
+<!-- TYPING LESSON -->
+<div id="typing-lesson" class="screen">
+  <div class="lhdr">
+    <div>
+      <div class="ltitle" id="ltitle">Lesson 1</div>
+      <div class="lmeta">
+        <span>⌨️ <span id="tch">0</span> chars</span>
+        <span>🎯 <span id="tacc">100</span>%</span>
+        <span>💡 <span id="thn">3</span> hints</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+      <button class="bsm" onclick="useHint()">💡 Hint</button>
+      <button class="bsm" onclick="resetLesson()">↺ Restart</button>
+      <button class="bsm" onclick="showScreen('student-dash')">← Back</button>
+    </div>
+  </div>
+  <div class="pbw">
+    <div class="pbl"><span>Progress</span><span id="ppct">0%</span></div>
+    <div class="pb"><div class="pf" id="pf" style="width:0%"></div></div>
+  </div>
+  <div class="tarea" style="margin-top:1rem">
+    <div class="cpanel">
+      <div class="phdr"><span>📖 Study this code</span><span id="llang">python</span></div>
+      <div class="pbody"><div class="cdisplay" id="cdisplay"></div></div>
+    </div>
+    <div class="ipanel">
+      <div class="phdr"><span>⌨️ Type it here</span><span style="color:var(--accent)">char by char</span></div>
+      <div class="pbody" style="padding:0"><textarea class="tinput" id="tinput" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="Start typing the code on the left..."></textarea></div>
+    </div>
+  </div>
+</div>
+
+<!-- LESSON COMPLETE -->
+<div id="lesson-complete" class="screen">
+  <div class="cbox">
+    <h2>🎉 Nice Work!</h2>
+    <p>Lesson complete. Here's how you did:</p>
+    <div class="srow">
+      <div class="si"><div class="v" id="sacc">100%</div><div class="l">ACCURACY</div></div>
+      <div class="si"><div class="v" id="sxp">+50</div><div class="l">XP EARNED</div></div>
+      <div class="si"><div class="v" id="sch">0</div><div class="l">CHARS</div></div>
+    </div>
+    <button class="btn btn-p" id="nxtbtn" onclick="nextLesson()">Next Lesson →</button>
+    <button class="btn btn-s" onclick="showScreen('student-dash')" style="margin-top:.75rem">Back to Dashboard</button>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz-screen" class="screen">
+  <div class="qbox">
+    <div class="qprog" id="qprog">Question 1 of 5</div>
+    <h3 id="qq">Loading...</h3>
+    <div class="qopts" id="qopts"></div>
+    <div class="qfb" id="qfb"></div>
+    <button class="btn btn-p" id="qnxt" onclick="quizNext()" style="display:none">Next →</button>
+    <button class="btn btn-s" onclick="showScreen('student-dash')" style="margin-top:.75rem">Back to Dashboard</button>
+  </div>
+</div>
+
+<!-- TEACHER DASH -->
+<div id="teacher-dash" class="screen">
+  <div class="thdr"><h2>Teacher Dashboard</h2><p>// CODECOACH CONTROL PANEL</p></div>
+  <div class="tabs">
+    <div class="tab on" onclick="swTab('overview',this)">Overview</div>
+    <div class="tab" onclick="swTab('students',this)">Students</div>
+    <div class="tab" onclick="swTab('setup',this)">Setup Guide</div>
+  </div>
+  <div id="t-overview" class="tc on">
+    <div class="icard"><h3>🎯 Your Skool Workflow</h3><p>1. Add students to Google Sheet (Code, Name, Track, Class, Status)<br>2. DM each student their code on Skool<br>3. Post the CodeCoach link in Skool<br>4. Students enter code → track loads automatically<br>5. Watch progress update in your sheet in real time</p></div>
+    <div class="icard"><h3>✅ Sheet Connected</h3><p>Your Google Apps Script Web App is live. Student logins and progress saves are working.</p><div class="cs">STUD01 · STUD02 ready to go</div></div>
+    <div class="icard"><h3>🌐 Host on Netlify (Free)</h3><p>Drag this HTML file to netlify.com/drop — you get a live link in 2 minutes. Post it on Skool.</p></div>
+  </div>
+  <div id="t-students" class="tc">
+    <p style="font-family:var(--mono);font-size:.8rem;color:var(--muted);margin-bottom:1rem">Live from your Google Sheet:</p>
+    <div id="sload" style="font-family:var(--mono);font-size:.85rem;color:var(--accent)">Loading students...</div>
+    <table class="stbl" id="stbl" style="display:none">
+      <thead><tr><th>CODE</th><th>NAME</th><th>TRACK</th><th>CLASS</th><th>STATUS</th><th>XP</th><th>LESSON</th><th>LAST ACTIVE</th></tr></thead>
+      <tbody id="stbody"></tbody>
+    </table>
+    <button class="bsm" onclick="loadStudents()" style="margin-top:1rem">🔄 Refresh</button>
+  </div>
+  <div id="t-setup" class="tc">
+    <div class="icard"><h3>➕ Adding Students</h3><p>Open your Google Sheet → add row: Code | Name | Track | Class | Active<br>Use any code (STUD03, CC-005, initials — anything unique)<br>DM them the code on Skool → they enter it → done</p></div>
+    <div class="icard"><h3>📋 Available Tracks</h3><p>AI Bot · Website · Game · Online Store · Mobile App · Discord Bot · Data Dashboard · Automation</p></div>
+    <div class="icard"><h3>🔗 Your Apps Script URL</h3><div class="cs" style="font-size:.7rem">https://script.google.com/macros/s/AKfycbxiPLuLwzIrXOJImQbn7C1PSGHobtGNnuZ_YWHPmxl1t4UI9qcAJlwDwujxqpXj9J2_4Q/exec</div></div>
+  </div>
+  <button class="btn btn-s" onclick="showScreen('landing')" style="width:auto;padding:.6rem 1.5rem;margin-top:2rem">← Back to Home</button>
+</div>
+
+<!-- WELCOME BACK -->
+<div id="wb">
+  <p>Welcome back, <span class="hi" id="wbn">Student</span>! <span id="wbs"></span></p>
+  <div style="display:flex;gap:.5rem">
+    <button class="bsm ac" onclick="resumeProgress()">Resume →</button>
+    <button class="bsm" onclick="document.getElementById('wb').style.display='none'">✕</button>
+  </div>
+</div>
+
+<script>
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbxiPLuLwzIrXOJImQbn7C1PSGHobtGNnuZ_YWHPmxl1t4UI9qcAJlwDwujxqpXj9J2_4Q/exec";
+
+// ── TRACKS ──────────────────────────────────────────────────
+const TRACKS = {
+  "AI Bot": {
+    icon:"🤖", lang:"python",
+    lessons:[
+      { title:"Python Basics", desc:"Variables, print, strings",
+        code:"name = \"CodeCoach\"\nversion = 1.0\nis_ready = True\n\nprint(\"Welcome to\", name)\nprint(\"Version:\", version)\nprint(\"Ready:\", is_ready)\n\nmessage = f\"Hello from {name} v{version}\"\nprint(message)",
+        quiz:[
+          {q:"What does print() do?",opts:["Saves to file","Outputs to screen","Creates a variable","Imports a module"],ans:1,exp:"print() displays output to the screen."},
+          {q:"What symbol starts an f-string?",opts:["#","@","f","$"],ans:2,exp:"f-strings start with f before the quote: f'Hello {name}'"},
+          {q:"Which stores True or False?",opts:["String","Integer","Boolean","Float"],ans:2,exp:"Boolean values are True or False in Python."}
+        ]
+      },
+      { title:"Functions", desc:"def, parameters, return",
+        code:"def greet(name):\n    message = f\"Hello, {name}!\"\n    return message\n\ndef add(a, b):\n    return a + b\n\nresult = greet(\"Chris\")\nprint(result)\n\ntotal = add(10, 25)\nprint(\"Total:\", total)",
+        quiz:[
+          {q:"What keyword defines a function?",opts:["func","function","def","fn"],ans:2,exp:"def is the keyword to define a function in Python."},
+          {q:"What does return do?",opts:["Prints output","Sends back a value","Loops back","Ends the program"],ans:1,exp:"return sends a value back to the caller."},
+          {q:"What are function inputs called?",opts:["Returns","Parameters","Variables","Strings"],ans:1,exp:"Inputs to functions are called parameters."}
+        ]
+      },
+      { title:"Install Ollama", desc:"Set up your local AI",
+        code:"# Run in your terminal:\n# 1. Download Ollama from ollama.com\n# 2. Install it\n# 3. Pull the model:\n#    ollama pull llama3.2\n# 4. Test it:\n#    ollama run llama3.2\n# 5. Install Python library:\n#    pip install ollama\n\nimport ollama\n\nresponse = ollama.chat(\n    model=\"llama3.2\",\n    messages=[{\"role\":\"user\",\"content\":\"Say hello!\"}]\n)\nprint(response[\"message\"][\"content\"])",
+        quiz:[
+          {q:"What is Ollama?",opts:["A cloud AI service","A tool to run AI locally","A Python library only","A database"],ans:1,exp:"Ollama lets you run AI models locally — no API fees."},
+          {q:"Where do you download Ollama?",opts:["pip install ollama","ollama.com","github.com","app store"],ans:1,exp:"Download Ollama from ollama.com"},
+          {q:"What does offline mean for your bot?",opts:["Needs wifi","Works without internet after setup","Needs API key","Runs in cloud"],ans:1,exp:"After downloading the model your bot works completely offline."}
+        ]
+      },
+      { title:"Chat Loop", desc:"Build the conversation engine",
+        code:"import ollama\n\ndef chat_with_bot():\n    print(\"Bot ready! Type quit to exit.\")\n    history = []\n\n    while True:\n        user_input = input(\"You: \")\n\n        if user_input.lower() == \"quit\":\n            print(\"Goodbye!\")\n            break\n\n        history.append({\n            \"role\": \"user\",\n            \"content\": user_input\n        })\n\n        response = ollama.chat(\n            model=\"llama3.2\",\n            messages=history\n        )\n\n        reply = response[\"message\"][\"content\"]\n        print(f\"Bot: {reply}\")\n\n        history.append({\n            \"role\": \"assistant\",\n            \"content\": reply\n        })\n\nchat_with_bot()",
+        quiz:[
+          {q:"What does while True do?",opts:["Runs once","Loops forever until break","Checks a condition","Calls a function"],ans:1,exp:"while True creates an infinite loop that only stops when break is called."},
+          {q:"Why store conversation history?",opts:["To save to file","So bot remembers context","To make it faster","Required by Ollama"],ans:1,exp:"Sending history lets the bot remember what was said earlier."},
+          {q:"What stops the loop?",opts:["quit command","ctrl+c only","closing terminal","end keyword"],ans:0,exp:"When user types quit the break statement exits the while loop."}
+        ]
+      },
+      { title:"Bot Personality", desc:"Give your bot a character",
+        code:"import ollama\n\nSYSTEM_PROMPT = \"\"\"You are CodeBot, a friendly coding tutor.\nYou explain code clearly and encourage learners.\nKeep answers short and use simple examples.\nAlways be positive and patient.\"\"\"\n\ndef chat_with_bot(name=\"Student\"):\n    print(f\"CodeBot: Hey {name}! Ready to learn?\")\n    history = [{\"role\": \"system\", \"content\": SYSTEM_PROMPT}]\n\n    while True:\n        user_input = input(\"You: \")\n        if user_input.lower() == \"quit\":\n            print(\"CodeBot: Great session!\")\n            break\n        history.append({\"role\": \"user\", \"content\": user_input})\n        response = ollama.chat(model=\"llama3.2\", messages=history)\n        reply = response[\"message\"][\"content\"]\n        print(f\"CodeBot: {reply}\")\n        history.append({\"role\": \"assistant\", \"content\": reply})\n\nname = input(\"Your name: \")\nchat_with_bot(name)",
+        quiz:[
+          {q:"What is a system prompt?",opts:["User message","Bot personality instructions","An error message","A Python function"],ans:1,exp:"A system prompt gives the AI its personality and behavior rules."},
+          {q:"Where is the system prompt in history?",opts:["Last item","Middle","First item","Not in history"],ans:2,exp:"The system message goes first so it sets the context."},
+          {q:"Can you change the bot personality?",opts:["No, fixed","Yes, edit system prompt","Only with paid API","Only in settings"],ans:1,exp:"Edit the system prompt text to give your bot any personality."}
+        ]
+      },
+      { title:"Final Project", desc:"Your complete working bot",
+        code:"import ollama\nimport datetime\n\nBOT_NAME = \"MyBot\"\nYOUR_NAME = \"Coder\"\n\nSYSTEM_PROMPT = f\"\"\"You are {BOT_NAME}, a helpful assistant.\nYou are friendly, concise, and knowledgeable.\nCurrent date: {datetime.date.today()}\nHelp the user with any questions.\"\"\"\n\ndef run_bot():\n    print(f\"{'='*40}\")\n    print(f\"  Welcome to {BOT_NAME}!\")\n    print(f\"  Powered by Llama (100% offline)\")\n    print(f\"{'='*40}\")\n    history = [{\"role\": \"system\", \"content\": SYSTEM_PROMPT}]\n    count = 0\n    while True:\n        try:\n            user_input = input(f\"{YOUR_NAME}: \").strip()\n            if not user_input:\n                continue\n            if user_input.lower() in [\"quit\",\"exit\",\"bye\"]:\n                print(f\"{BOT_NAME}: Goodbye!\")\n                break\n            history.append({\"role\":\"user\",\"content\":user_input})\n            response = ollama.chat(model=\"llama3.2\", messages=history)\n            reply = response[\"message\"][\"content\"]\n            print(f\"{BOT_NAME}: {reply}\")\n            history.append({\"role\":\"assistant\",\"content\":reply})\n            count += 1\n        except KeyboardInterrupt:\n            print(f\"\\n{BOT_NAME}: See you!\")\n            break\n    print(f\"\\nMessages: {count}\")\n\nrun_bot()",
+        quiz:[
+          {q:"What does .strip() do?",opts:["Removes letters","Removes extra spaces","Makes uppercase","Splits string"],ans:1,exp:".strip() removes leading and trailing whitespace."},
+          {q:"What handles Ctrl+C gracefully?",opts:["if statement","try/except KeyboardInterrupt","while loop","break"],ans:1,exp:"try/except KeyboardInterrupt catches Ctrl+C so bot exits cleanly."},
+          {q:"Your bot is done! What next?",opts:["Delete it","Screenshot and post to Skool","Start over","Nothing"],ans:1,exp:"Screenshot your working bot and post it in Skool — that is your final submission!"}
+        ]
+      }
+    ]
+  },
+  "Website":{icon:"🌐",lang:"html",lessons:[
+    {title:"HTML Structure",desc:"Skeleton of a webpage",
+     code:"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>My Website</title>\n</head>\n<body>\n  <h1>Welcome to My Site</h1>\n  <p>This is my first webpage.</p>\n  <a href=\"#\">Click here</a>\n</body>\n</html>",
+     quiz:[
+       {q:"What does DOCTYPE tell the browser?",opts:["The page title","The HTML version","The CSS file","The server"],ans:1,exp:"DOCTYPE tells the browser which HTML version to use."},
+       {q:"Where does visible content go?",opts:["<head>","<title>","<body>","<html>"],ans:2,exp:"All visible content goes inside the body tag."},
+       {q:"What tag creates a clickable link?",opts:["<link>","<href>","<a>","<url>"],ans:2,exp:"The anchor tag <a> creates hyperlinks."}
+     ]},
+    {title:"CSS Styling",desc:"Make it look amazing",
+     code:"body {\n  font-family: Arial, sans-serif;\n  background: #1a1a2e;\n  color: white;\n  margin: 0;\n  padding: 20px;\n}\n\nh1 {\n  color: #00ff88;\n  font-size: 2.5rem;\n  text-align: center;\n}\n\n.card {\n  background: #16213e;\n  border-radius: 12px;\n  padding: 20px;\n  margin: 20px auto;\n  max-width: 500px;\n}\n\nbutton {\n  background: #00ff88;\n  color: black;\n  border: none;\n  padding: 12px 24px;\n  border-radius: 8px;\n  cursor: pointer;\n}",
+     quiz:[
+       {q:"What does border-radius do?",opts:["Adds a border","Rounds the corners","Changes color","Sets width"],ans:1,exp:"border-radius rounds the corners of an element."},
+       {q:"What is a CSS class selector?",opts:["#myId","*","element",".myClass"],ans:3,exp:"Classes are selected with a dot: .className"},
+       {q:"What does margin do?",opts:["Space inside","Space outside","Border thickness","Background color"],ans:1,exp:"margin adds space outside; padding adds space inside."}
+     ]}
+  ]},
+  "Game":{icon:"🎮",lang:"javascript",lessons:[
+    {title:"Canvas Setup",desc:"Create your game window",
+     code:"const canvas = document.getElementById(\"gameCanvas\");\nconst ctx = canvas.getContext(\"2d\");\n\ncanvas.width = 800;\ncanvas.height = 600;\n\nctx.fillStyle = \"#1a1a2e\";\nctx.fillRect(0, 0, canvas.width, canvas.height);\n\nctx.fillStyle = \"#00ff88\";\nctx.fillRect(100, 100, 40, 40);\n\nctx.fillStyle = \"white\";\nctx.font = \"24px Arial\";\nctx.fillText(\"Score: 0\", 20, 30);",
+     quiz:[
+       {q:"What does getContext('2d') return?",opts:["The canvas element","A drawing tool","The window size","An image"],ans:1,exp:"getContext('2d') returns the 2D drawing context."},
+       {q:"What does fillRect() draw?",opts:["A circle","A line","A filled rectangle","An image"],ans:2,exp:"fillRect(x, y, width, height) draws a filled rectangle."},
+       {q:"What sets the drawing color?",opts:["ctx.color","ctx.fillStyle","ctx.paint","ctx.setColor"],ans:1,exp:"ctx.fillStyle sets the color used for filling shapes."}
+     ]}
+  ]},
+  "Discord Bot":{icon:"🤝",lang:"python",lessons:[
+    {title:"Bot Basics",desc:"Your first Discord bot",
+     code:"import discord\nfrom discord.ext import commands\n\nbot = commands.Bot(command_prefix=\"!\")\n\n@bot.event\nasync def on_ready():\n    print(f\"Bot is online: {bot.user}\")\n\n@bot.command()\nasync def hello(ctx):\n    await ctx.send(f\"Hey {ctx.author.name}!\")\n\n@bot.command()\nasync def ping(ctx):\n    await ctx.send(\"Pong!\")\n\nbot.run(\"YOUR_BOT_TOKEN\")",
+     quiz:[
+       {q:"What is the command prefix?",opts:["$","#","@","!"],ans:3,exp:"The prefix ! means users type !hello, !ping etc."},
+       {q:"What does on_ready() do?",opts:["Creates the bot","Runs when bot connects","Handles commands","Sets prefix"],ans:1,exp:"on_ready() fires when the bot connects to Discord."},
+       {q:"What does async mean?",opts:["Fast code","Runs without blocking","Error handling","A library"],ans:1,exp:"async functions can pause and resume for multiple tasks."}
+     ]}
+  ]}
+};
+
+["Online Store","Mobile App","Data Dashboard","Automation"].forEach(n=>{
+  TRACKS[n]={icon:n==="Online Store"?"🛒":n==="Mobile App"?"📱":n==="Data Dashboard"?"📊":"⚙️",lang:"python",
+    lessons:[{title:"Getting Started",desc:"Introduction to "+n,
+      code:"# Welcome to "+n+"!\nprint(\"Track: "+n+"\")\nprint(\"Status: Ready to learn!\")\nprint(\"Let's build something amazing.\")",
+      quiz:[{q:"Ready to start coding?",opts:["Yes!","Absolutely!","Let's go!","100%!"],ans:0,exp:"Great attitude!"}]
+    }]
+  };
+});
+
+// ── STATE ────────────────────────────────────────────────────
+let S = {
+  student:null, track:null,
+  curLesson:0, typed:"", hints:3, quizIdx:0, quizScore:0, allQ:[]
+};
+
+// ── SCREENS ──────────────────────────────────────────────────
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  if(id==="teacher-dash") loadStudents();
+}
+
+// ── SHEET API ────────────────────────────────────────────────
+async function sheetReq(params){
+  try{
+    const r=await fetch(SHEET_URL+"?"+new URLSearchParams(params));
+    return await r.json();
+  }catch(e){return null;}
+}
+
+// ── LOGIN ────────────────────────────────────────────────────
+async function doLogin(){
+  const name=document.getElementById("ln").value.trim();
+  const code=document.getElementById("lc").value.trim().toUpperCase();
+  const err=document.getElementById("lerr");
+  const ld=document.getElementById("lload");
+  err.style.display="none";
+  if(!name){err.textContent="Please enter your name.";err.style.display="block";return;}
+  if(!code){err.textContent="Please enter your code.";err.style.display="block";return;}
+  ld.style.display="block";
+  const res=await sheetReq({action:"lookup",code});
+  ld.style.display="none";
+  if(!res||!res.found){err.textContent="Code not found. Check with your teacher.";err.style.display="block";return;}
+  S.student={name,code,track:res.track||"AI Bot",xp:res.xp||0,lessonIdx:res.lessonIdx||0};
+  saveLocal(); loadDash();
+}
+
+function startSolo(){
+  S.student={name:"Self-Learner",code:"SOLO",track:"AI Bot",xp:0,lessonIdx:0};
+  loadDash();
+}
+
+// ── DASHBOARD ────────────────────────────────────────────────
+function loadDash(){
+  const s=S.student;
+  const tr=TRACKS[s.track]||TRACKS["AI Bot"];
+  S.track=tr;
+  document.getElementById("dgreet").textContent="Hey "+s.name+" 👋";
+  document.getElementById("dtrack").textContent=tr.icon+" "+s.track;
+  document.getElementById("xpc").textContent=(s.xp||0)+" XP";
+  document.getElementById("xpf").style.width=Math.min(100,((s.xp||0)%500)/5)+"%";
+  const grid=document.getElementById("lgrid");
+  grid.innerHTML="";
+  tr.lessons.forEach((l,i)=>{
+    const done=i<(s.lessonIdx||0), cur=i===(s.lessonIdx||0), locked=i>(s.lessonIdx||0);
+    const c=document.createElement("div");
+    c.className="lcard"+(done?" done":"")+(locked?" locked":"");
+    c.innerHTML=`<div class="lnum">${done?"✓":i+1}</div><div class="linfo"><h4>${l.title}</h4><p>${l.desc}${cur?' • <span style="color:var(--accent)">Current</span>':""}</p></div>`;
+    if(!locked) c.onclick=()=>startLesson(i);
+    grid.appendChild(c);
+  });
+  const qc=document.createElement("div");
+  qc.className="lcard"+((s.lessonIdx||0)===0?" locked":"");
+  qc.innerHTML='<div class="lnum">🧠</div><div class="linfo"><h4>Module Quiz</h4><p>Test your knowledge</p></div>';
+  if((s.lessonIdx||0)>0) qc.onclick=startQuiz;
+  grid.appendChild(qc);
+  showScreen("student-dash");
+}
+
+// ── LESSON ───────────────────────────────────────────────────
+function startLesson(idx){
+  S.curLesson=idx; S.typed=""; S.hints=3;
+  const l=S.track.lessons[idx];
+  document.getElementById("ltitle").textContent="Lesson "+(idx+1)+": "+l.title;
+  document.getElementById("llang").textContent=S.track.lang;
+  document.getElementById("thn").textContent="3";
+  renderCode();
+  const inp=document.getElementById("tinput");
+  inp.value=""; inp.oninput=handleType;
+  showScreen("typing-lesson");
+  setTimeout(()=>inp.focus(),100);
+}
+
+function esc(c){
+  if(c==="<")return"&lt;";if(c===">")return"&gt;";if(c==="&")return"&amp;";return c;
+}
+
+function renderCode(){
+  const target=S.track.lessons[S.curLesson].code;
+  const typed=S.typed;
+  const lines=target.split("\n");
+  let ci=0, html="";
+  lines.forEach(line=>{
+    const ls=ci, isCur=typed.length>=ls&&typed.length<=ci+line.length+1;
+    html+=`<span class="cl${isCur?" cur":""}">`;
+    for(let i=0;i<line.length;i++){
+      const gi=ci+i;
+      if(gi<typed.length) html+=`<span class="${typed[gi]===target[gi]?"cc":"cw"}">${esc(target[gi])}</span>`;
+      else if(gi===typed.length) html+=`<span class="cx">${esc(target[gi])}</span>`;
+      else html+=`<span class="cp">${esc(target[gi])}</span>`;
+    }
+    if(ci+line.length<target.length&&ci+line.length===typed.length) html+=`<span class="cx">↵</span>`;
+    html+=`</span>\n`;
+    ci+=line.length+1;
+  });
+  document.getElementById("cdisplay").innerHTML=html;
+  const pct=Math.round((typed.length/target.length)*100);
+  document.getElementById("pf").style.width=pct+"%";
+  document.getElementById("ppct").textContent=pct+"%";
+  document.getElementById("tch").textContent=typed.length;
+  let w=0; for(let i=0;i<typed.length;i++) if(typed[i]!==target[i]) w++;
+  document.getElementById("tacc").textContent=typed.length>0?Math.round(((typed.length-w)/typed.length)*100):100;
+}
+
+function handleType(e){
+  S.typed=e.target.value; renderCode();
+  if(S.typed===S.track.lessons[S.curLesson].code) completeLesson();
+}
+
+function completeLesson(){
+  const target=S.track.lessons[S.curLesson].code;
+  let w=0; for(let i=0;i<S.typed.length;i++) if(S.typed[i]!==target[i]) w++;
+  const acc=Math.round(((target.length-w)/target.length)*100);
+  const xp=Math.round(50*(acc/100));
+  document.getElementById("sacc").textContent=acc+"%";
+  document.getElementById("sxp").textContent="+"+xp;
+  document.getElementById("sch").textContent=target.length;
+  S.student.lessonIdx=Math.max(S.student.lessonIdx||0,S.curLesson+1);
+  S.student.xp=(S.student.xp||0)+xp;
+  saveLocal(); saveSheet();
+  document.getElementById("nxtbtn").style.display=S.curLesson<S.track.lessons.length-1?"block":"none";
+  showScreen("lesson-complete");
+}
+
+function nextLesson(){
+  if(S.curLesson<S.track.lessons.length-1) startLesson(S.curLesson+1);
+  else loadDash();
+}
+function resetLesson(){startLesson(S.curLesson);}
+function useHint(){
+  if(S.hints<=0)return;
+  const target=S.track.lessons[S.curLesson].code;
+  const next=target[S.typed.length]; if(!next)return;
+  S.hints--; document.getElementById("thn").textContent=S.hints;
+  S.typed+=next;
+  const inp=document.getElementById("tinput");
+  inp.value=S.typed; renderCode();
+}
+
+// ── QUIZ ─────────────────────────────────────────────────────
+function startQuiz(){
+  S.quizIdx=0; S.quizScore=0; S.allQ=[];
+  S.track.lessons.forEach(l=>{if(l.quiz)l.quiz.forEach(q=>S.allQ.push(q));});
+  showScreen("quiz-screen"); renderQuiz();
+}
+function renderQuiz(){
+  if(S.quizIdx>=S.allQ.length){finishQuiz();return;}
+  const q=S.allQ[S.quizIdx];
+  document.getElementById("qprog").textContent="Question "+(S.quizIdx+1)+" of "+S.allQ.length;
+  document.getElementById("qq").textContent=q.q;
+  document.getElementById("qfb").textContent="";
+  document.getElementById("qnxt").style.display="none";
+  const opts=document.getElementById("qopts");
+  opts.innerHTML="";
+  q.opts.forEach((o,i)=>{
+    const b=document.createElement("button");
+    b.className="qopt"; b.textContent=o; b.onclick=()=>answerQ(i);
+    opts.appendChild(b);
+  });
+}
+function answerQ(idx){
+  const q=S.allQ[S.quizIdx];
+  document.querySelectorAll(".qopt").forEach(b=>b.onclick=null);
+  if(idx===q.ans){document.querySelectorAll(".qopt")[idx].classList.add("ok");document.getElementById("qfb").textContent="✅ "+q.exp;S.quizScore++;}
+  else{document.querySelectorAll(".qopt")[idx].classList.add("no");document.querySelectorAll(".qopt")[q.ans].classList.add("ok");document.getElementById("qfb").textContent="❌ "+q.exp;}
+  document.getElementById("qnxt").style.display="block";
+}
+function quizNext(){S.quizIdx++;renderQuiz();}
+function finishQuiz(){
+  const pct=Math.round((S.quizScore/S.allQ.length)*100);
+  const xp=pct>=70?100:50;
+  S.student.xp=(S.student.xp||0)+xp; saveLocal(); saveSheet();
+  document.getElementById("qq").textContent="Quiz done! "+S.quizScore+"/"+S.allQ.length+" ("+pct+"%) — +"+xp+" XP!";
+  document.getElementById("qopts").innerHTML="";
+  document.getElementById("qfb").textContent=pct>=70?"Great job! You passed!":"Keep practicing — you got this!";
+  document.getElementById("qnxt").style.display="none";
+}
+
+// ── TEACHER ──────────────────────────────────────────────────
+function swTab(name,el){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("on"));
+  document.querySelectorAll(".tc").forEach(t=>t.classList.remove("on"));
+  el.classList.add("on");
+  document.getElementById("t-"+name).classList.add("on");
+  if(name==="students") loadStudents();
+}
+async function loadStudents(){
+  const tbody=document.getElementById("stbody");
+  const tbl=document.getElementById("stbl");
+  const ld=document.getElementById("sload");
+  ld.style.display="block"; tbl.style.display="none";
+  const res=await sheetReq({action:"allStudents"});
+  ld.style.display="none";
+  if(!res||!res.students||!res.students.length){ld.textContent="No students yet. Add them to your Google Sheet!";ld.style.display="block";return;}
+  tbody.innerHTML=res.students.map(s=>`<tr><td><code style="color:var(--accent)">${s.code||"-"}</code></td><td>${s.name||"-"}</td><td>${s.track||"-"}</td><td>${s.class||"-"}</td><td><span class="sbadge ${s.status==="Active"?"sa":"si2"}">${s.status||"Active"}</span></td><td>${s.xp||0}</td><td>${s.lessonIdx||0}</td><td>${s.lastActive||"Never"}</td></tr>`).join("");
+  tbl.style.display="table";
+}
+
+// ── PERSISTENCE ──────────────────────────────────────────────
+function saveLocal(){try{localStorage.setItem("cc_s",JSON.stringify(S.student));}catch(e){}}
+function loadLocal(){
+  try{
+    const d=localStorage.getItem("cc_s");
+    if(d){
+      const s=JSON.parse(d);
+      if(s&&s.name){
+        S.student=s;
+        document.getElementById("wbn").textContent=s.name;
+        document.getElementById("wbs").textContent=(s.xp||0)+" XP · Lesson "+((s.lessonIdx||0)+1);
+        document.getElementById("wb").style.display="flex";
+      }
+    }
+  }catch(e){}
+}
+function resumeProgress(){document.getElementById("wb").style.display="none";loadDash();}
+async function saveSheet(){
+  if(!S.student||S.student.code==="SOLO")return;
+  await sheetReq({action:"progress",code:S.student.code,xp:S.student.xp,lessonIdx:S.student.lessonIdx,lastActive:new Date().toLocaleDateString()});
+}
+
+window.onload=loadLocal;
+</script>
+</body>
+</html>
