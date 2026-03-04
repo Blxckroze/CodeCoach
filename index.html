@@ -459,7 +459,7 @@ async function doLogin(){
   ld.style.display="block";
   const res=await sheetReq({action:"lookup",code});
   ld.style.display="none";
-  if(!res||!res.found){err.textContent="Code not found. Check with your teacher.";err.style.display="block";return;}
+  if(!res||!res.success){err.textContent="Code not found. Check with your teacher.";err.style.display="block";return;}
   S.student={name,code,track:res.track||"AI Bot",xp:res.xp||0,lessonIdx:res.lessonIdx||0};
   saveLocal(); loadDash();
 }
