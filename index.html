@@ -215,14 +215,14 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
     <p>// LEARN BY TYPING. RETAIN BY DOING.</p>
   </div>
   <div class="cards">
-    <div class="card" onclick="showScreen('teacher-dash')">
+    <div class="card" onclick="showScreen('teacher-login')">
       <div class="icon">🎓</div><h3>Teacher</h3><p>Dashboard &amp; student progress</p>
     </div>
     <div class="card" onclick="showScreen('student-login')">
       <div class="icon">🧑‍💻</div><h3>Student</h3><p>Enter your personal code</p>
     </div>
-    <div class="card" onclick="startSolo()">
-      <div class="icon">🚀</div><h3>Self-Learn</h3><p>No code needed</p>
+    <div class="card" onclick="showScreen('student-login')">
+      <div class="icon">🚀</div><h3>Self-Learn</h3><p>Enter your access code</p>
     </div>
   </div>
 </div>
@@ -238,6 +238,18 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
     <button class="btn btn-s" onclick="showScreen('landing')" style="margin-top:.75rem">← Back</button>
     <div class="err" id="lerr">Code not found. Check with your teacher.</div>
     <div class="loading" id="lload">⏳ Looking you up...</div>
+  </div>
+</div>
+
+<!-- TEACHER LOGIN -->
+<div id="teacher-login" class="screen">
+  <div class="login-box">
+    <h2>Teacher Access 🎓</h2>
+    <p>// ENTER YOUR PASSPHRASE</p>
+    <div class="ig"><label>PASSPHRASE</label><input id="tpass" type="password" placeholder="Your secret phrase"></div>
+    <button class="btn btn-p" onclick="doTeacherLogin()">Enter Dashboard →</button>
+    <button class="btn btn-s" onclick="showScreen('landing')" style="margin-top:.75rem">← Back</button>
+    <div class="err" id="terr">Wrong passphrase. Try again.</div>
   </div>
 </div>
 
@@ -642,6 +654,20 @@ function loadDash(){
   if((s.lessonIdx||0)>0) qc.onclick=startQuiz;
   grid.appendChild(qc);
   showScreen("student-dash");
+}
+
+// ── TEACHER LOGIN ────────────────────────────────────────────
+function doTeacherLogin(){
+  const pass=document.getElementById("tpass").value.trim();
+  const err=document.getElementById("terr");
+  err.style.display="none";
+  // Change "skoolteacher" to whatever passphrase you want
+  if(pass==="skoolteacher"){
+    document.getElementById("tpass").value="";
+    showScreen("teacher-dash"); loadStudents();
+  } else {
+    err.style.display="block";
+  }
 }
 
 // ── LESSON ───────────────────────────────────────────────────
