@@ -858,14 +858,115 @@ const TRACKS = {
      ]},
   ]},
   "Discord Bot":{icon:"🤝",lang:"python",lessons:[
-    {title:"Bot Basics",desc:"Your first Discord bot",
-     code:"import discord\nfrom discord.ext import commands\n\nbot = commands.Bot(command_prefix=\"!\")\n\n@bot.event\nasync def on_ready():\n    print(f\"Bot is online: {bot.user}\")\n\n@bot.command()\nasync def hello(ctx):\n    await ctx.send(f\"Hey {ctx.author.name}!\")\n\n@bot.command()\nasync def ping(ctx):\n    await ctx.send(\"Pong!\")\n\nbot.run(\"YOUR_BOT_TOKEN\")",
+    {title:"Bot Setup",desc:"Create and connect your Discord bot",
+     intro:{
+       goal:"You're going to set up a real Discord bot — create it on the Discord Developer Portal, get your token, and write the Python code that connects it to your server. By the end of this lesson your bot will be online and responding.",
+       defs:[
+         {k:"discord.py",v:"The Python library used to build Discord bots. Install with: pip install discord.py"},
+         {k:"bot token",v:"A secret key that identifies your bot. Never share it — treat it like a password."},
+         {k:"intents",v:"Permissions that tell Discord what your bot is allowed to see and do."},
+         {k:"on_ready()",v:"An event that fires automatically when the bot successfully connects to Discord."},
+         {k:"@bot.event",v:"A decorator that marks a function as an event handler for Discord events."},
+         {k:"bot.run()",v:"Starts the bot and keeps it running. Always the last line in your bot file."},
+       ]
+     },
+     code:"import discord\nfrom discord.ext import commands\nimport os\n\n# Set up intents (permissions)\nintents = discord.Intents.default()\nintents.message_content = True\nintents.members = True\n\n# Create the bot\nbot = commands.Bot(\n    command_prefix=\"!\",\n    intents=intents,\n    description=\"My Discord Bot\"\n)\n\n# Runs when bot connects\n@bot.event\nasync def on_ready():\n    print(f\"Bot is online!\")\n    print(f\"Logged in as: {bot.user.name}\")\n    print(f\"Bot ID: {bot.user.id}\")\n    print(f\"Servers: {len(bot.guilds)}\")\n    print(\"Ready to go!\")\n\n# Basic ping command\n@bot.command()\nasync def ping(ctx):\n    latency = round(bot.latency * 1000)\n    await ctx.send(f\"Pong! Latency: {latency}ms\")\n\n# Your bot token goes here\nTOKEN = \"YOUR_BOT_TOKEN_HERE\"\nbot.run(TOKEN)",
      quiz:[
-       {q:"What is the command prefix?",opts:["$","#","@","!"],ans:3,exp:"The prefix ! means users type !hello, !ping etc."},
-       {q:"What does on_ready() do?",opts:["Creates the bot","Runs when bot connects","Handles commands","Sets prefix"],ans:1,exp:"on_ready() fires when the bot connects to Discord."},
-       {q:"What does async mean?",opts:["Fast code","Runs without blocking","Error handling","A library"],ans:1,exp:"async functions can pause and resume for multiple tasks."}
-     ]}
-  ]}
+       {q:"What are intents?",opts:["Bot commands","Permissions for what the bot can see","The bot token","Server settings"],ans:1,exp:"Intents tell Discord what your bot is allowed to access — messages, members, etc."},
+       {q:"What does on_ready() do?",opts:["Creates the bot","Runs when bot connects to Discord","Handles commands","Sets the prefix"],ans:1,exp:"on_ready() fires automatically when the bot successfully connects to Discord."},
+       {q:"Where should you NEVER put your bot token?",opts:["In the code","In a .env file","In a config","On GitHub or shared publicly"],ans:3,exp:"Never share your token publicly or push it to GitHub — anyone with it can control your bot."},
+     ]},
+    {title:"Commands",desc:"Build commands your server can use",
+     intro:{
+       goal:"Now you're going to build real commands — the things your server members type to interact with the bot. You'll learn how to receive arguments, send back responses, and use embeds to make your replies look professional.",
+       defs:[
+         {k:"@bot.command()",v:"A decorator that turns a function into a bot command users can trigger."},
+         {k:"ctx",v:"Context — contains info about the message, who sent it, which channel, which server."},
+         {k:"ctx.send()",v:"Sends a message back to the channel where the command was used."},
+         {k:"argument",v:"Extra text the user passes with a command. e.g. !greet Chris — 'Chris' is the argument."},
+         {k:"discord.Embed",v:"A formatted message card with title, description, color and fields. Looks more professional."},
+         {k:"embed.add_field()",v:"Adds a labeled section to an embed. Like a row in a table."},
+       ]
+     },
+     code:"import discord\nfrom discord.ext import commands\n\nintents = discord.Intents.default()\nintents.message_content = True\nbot = commands.Bot(command_prefix=\"!\", intents=intents)\n\n@bot.event\nasync def on_ready():\n    print(f\"{bot.user} is online!\")\n\n# Simple greeting command\n@bot.command()\nasync def hello(ctx, name: str = None):\n    if name:\n        await ctx.send(f\"Hey {name}! Welcome to the server! 👋\")\n    else:\n        await ctx.send(f\"Hey {ctx.author.mention}! 👋\")\n\n# Embed command - looks professional\n@bot.command()\nasync def info(ctx):\n    embed = discord.Embed(\n        title=\"Server Info\",\n        description=\"Here is everything about this server.\",\n        color=0x00ff88\n    )\n    embed.add_field(name=\"Server Name\", value=ctx.guild.name, inline=True)\n    embed.add_field(name=\"Members\", value=ctx.guild.member_count, inline=True)\n    embed.add_field(name=\"Created\", value=ctx.guild.created_at.strftime(\"%B %Y\"), inline=True)\n    embed.set_footer(text=f\"Requested by {ctx.author.name}\")\n    await ctx.send(embed=embed)\n\n# Echo command\n@bot.command()\nasync def say(ctx, *, message: str):\n    await ctx.message.delete()\n    await ctx.send(message)\n\nbot.run(\"YOUR_TOKEN\")",
+     quiz:[
+       {q:"What is ctx in a command?",opts:["The bot token","Context — info about the message and channel","A Discord server","An embed"],ans:1,exp:"ctx (context) contains everything about the message — who sent it, where, and the server."},
+       {q:"What does discord.Embed create?",opts:["A plain text message","A formatted card message","A file attachment","A server channel"],ans:1,exp:"Embed creates a rich formatted message card with title, fields, color, and footer."},
+       {q:"What does ctx.author.mention do?",opts:["Bans the user","Tags the user with @","Sends them a DM","Gets their name"],ans:1,exp:"ctx.author.mention returns the @mention tag so the bot can tag the user in its reply."},
+     ]},
+    {title:"Events",desc:"React to things that happen in your server",
+     intro:{
+       goal:"Commands are things users trigger. Events are things that happen automatically — someone joins the server, someone sends a message, someone gets a new role. You're going to build a bot that reacts to these server events in real time.",
+       defs:[
+         {k:"event",v:"Something that happens in Discord — a message sent, member joining, reaction added etc."},
+         {k:"on_member_join()",v:"Fires when a new member joins the server. Used for welcome messages."},
+         {k:"on_message()",v:"Fires every time any message is sent. You must call await bot.process_commands() inside it."},
+         {k:"member.guild",v:"The server that the member belongs to."},
+         {k:"channel.send()",v:"Sends a message to a specific channel object."},
+         {k:"bot.process_commands()",v:"Required inside on_message() — lets commands still work when you override message events."},
+       ]
+     },
+     code:"import discord\nfrom discord.ext import commands\n\nintents = discord.Intents.default()\nintents.message_content = True\nintents.members = True\nbot = commands.Bot(command_prefix=\"!\", intents=intents)\n\n@bot.event\nasync def on_ready():\n    print(f\"{bot.user} is ready!\")\n\n# Welcome new members\n@bot.event\nasync def on_member_join(member):\n    channel = discord.utils.get(member.guild.text_channels, name=\"general\")\n    if channel:\n        embed = discord.Embed(\n            title=f\"Welcome {member.name}!\",\n            description=f\"Hey {member.mention}, welcome to **{member.guild.name}**!\\nRead the rules and introduce yourself.\",\n            color=0x00ff88\n        )\n        embed.set_thumbnail(url=member.avatar.url if member.avatar else None)\n        await channel.send(embed=embed)\n\n# React to messages\n@bot.event\nasync def on_message(message):\n    if message.author == bot.user:\n        return\n    if \"hello\" in message.content.lower():\n        await message.channel.send(f\"Hey {message.author.mention}! 👋\")\n    if \"good morning\" in message.content.lower():\n        await message.add_reaction(\"☀️\")\n    # REQUIRED: lets commands still work\n    await bot.process_commands(message)\n\nbot.run(\"YOUR_TOKEN\")",
+     quiz:[
+       {q:"What does on_member_join() do?",opts:["Bans a member","Fires when someone joins the server","Runs every minute","Handles commands"],ans:1,exp:"on_member_join() fires automatically whenever a new member joins the server."},
+       {q:"Why call bot.process_commands() in on_message?",opts:["To send messages","To let commands still work","To delete messages","To log messages"],ans:1,exp:"Without process_commands(), your ! commands stop working when you override on_message."},
+       {q:"What does message.add_reaction() do?",opts:["Sends a message","Deletes the message","Adds an emoji reaction to the message","Tags the user"],ans:2,exp:"add_reaction() adds an emoji reaction to a specific message."},
+     ]},
+    {title:"Moderation",desc:"Keep your server clean automatically",
+     intro:{
+       goal:"You're going to build moderation commands — the tools that keep your server safe and clean. Kick, ban, mute, and a word filter that automatically deletes bad messages. This is what makes your bot actually useful for running a community.",
+       defs:[
+         {k:"member.kick()",v:"Removes a member from the server. They can rejoin with an invite."},
+         {k:"member.ban()",v:"Permanently bans a member from the server."},
+         {k:"has_permissions()",v:"A check decorator that only allows users with specific permissions to run a command."},
+         {k:"@commands.has_permissions()",v:"Decorator that blocks the command if the user doesn't have the required permission."},
+         {k:"message.delete()",v:"Deletes a specific message from the channel."},
+         {k:"ctx.send() + delete_after",v:"Sends a temporary message that auto-deletes after N seconds."},
+       ]
+     },
+     code:"import discord\nfrom discord.ext import commands\n\nintents = discord.Intents.default()\nintents.message_content = True\nintents.members = True\nbot = commands.Bot(command_prefix=\"!\", intents=intents)\n\nBAD_WORDS = [\"spam\", \"scam\", \"nsfw\"]\n\n@bot.event\nasync def on_ready():\n    print(f\"{bot.user} is ready!\")\n\n# Auto word filter\n@bot.event\nasync def on_message(message):\n    if message.author == bot.user:\n        return\n    for word in BAD_WORDS:\n        if word in message.content.lower():\n            await message.delete()\n            await message.channel.send(\n                f\"{message.author.mention} Watch your language!\",\n                delete_after=5\n            )\n            return\n    await bot.process_commands(message)\n\n# Kick command (requires kick_members permission)\n@bot.command()\n@commands.has_permissions(kick_members=True)\nasync def kick(ctx, member: discord.Member, *, reason=\"No reason given\"):\n    await member.kick(reason=reason)\n    await ctx.send(f\"✅ {member.name} was kicked. Reason: {reason}\")\n\n# Ban command (requires ban_members permission)\n@bot.command()\n@commands.has_permissions(ban_members=True)\nasync def ban(ctx, member: discord.Member, *, reason=\"No reason given\"):\n    await member.ban(reason=reason)\n    await ctx.send(f\"🔨 {member.name} was banned. Reason: {reason}\")\n\n# Clear messages\n@bot.command()\n@commands.has_permissions(manage_messages=True)\nasync def clear(ctx, amount: int = 5):\n    await ctx.channel.purge(limit=amount + 1)\n    await ctx.send(f\"🗑️ Cleared {amount} messages.\", delete_after=3)\n\n@kick.error\n@ban.error\nasync def permission_error(ctx, error):\n    if isinstance(error, commands.MissingPermissions):\n        await ctx.send(\"❌ You don't have permission to do that!\")\n\nbot.run(\"YOUR_TOKEN\")",
+     quiz:[
+       {q:"What does has_permissions() do?",opts:["Gives the user permissions","Blocks the command if user lacks permission","Lists server permissions","Adds a new role"],ans:1,exp:"has_permissions() checks if the command user has the required permission before running."},
+       {q:"What is the difference between kick and ban?",opts:["No difference","Kick removes temporarily, ban is permanent","Ban removes temporarily, kick is permanent","Both are permanent"],ans:1,exp:"Kick removes the member but they can rejoin. Ban permanently blocks them from the server."},
+       {q:"What does delete_after=5 do?",opts:["Deletes after 5 messages","Auto-deletes the message after 5 seconds","Waits 5 seconds before sending","Limits to 5 characters"],ans:1,exp:"delete_after=5 makes the bot's message automatically disappear after 5 seconds."},
+     ]},
+    {title:"AI Integration",desc:"Add an AI brain to your Discord bot",
+     intro:{
+       goal:"Now you're going to connect your Discord bot to Ollama so it can answer questions using a real AI model — completely offline, no API fees. When someone uses the !ask command, your bot sends their question to Ollama and posts the answer back in Discord.",
+       defs:[
+         {k:"ollama",v:"The local AI tool that runs models on your computer. Your bot talks to it through Python."},
+         {k:"ollama.chat()",v:"Sends a message to the AI model and gets a response back."},
+         {k:"async/await",v:"Used for operations that take time (like waiting for AI response) without freezing the bot."},
+         {k:"ctx.typing()",v:"Shows the 'Bot is typing...' indicator in Discord while waiting for the AI response."},
+         {k:"message[:2000]",v:"Discord messages have a 2000 character limit. This slices the response to fit."},
+         {k:"conversation history",v:"Storing past messages so the AI remembers context across multiple replies."},
+       ]
+     },
+     code:"import discord\nfrom discord.ext import commands\nimport ollama\n\nintents = discord.Intents.default()\nintents.message_content = True\nbot = commands.Bot(command_prefix=\"!\", intents=intents)\n\nSYSTEM_PROMPT = \"\"\"You are a helpful Discord bot assistant.\nYou are friendly, concise, and helpful.\nKeep responses under 1800 characters for Discord.\nAlways be positive and encouraging.\"\"\"\n\nchat_history = {}\n\n@bot.event\nasync def on_ready():\n    print(f\"{bot.user} with AI is online!\")\n\n@bot.command()\nasync def ask(ctx, *, question: str):\n    user_id = str(ctx.author.id)\n    if user_id not in chat_history:\n        chat_history[user_id] = [{\"role\": \"system\", \"content\": SYSTEM_PROMPT}]\n    chat_history[user_id].append({\"role\": \"user\", \"content\": question})\n    async with ctx.typing():\n        response = ollama.chat(\n            model=\"llama3.2\",\n            messages=chat_history[user_id]\n        )\n        reply = response[\"message\"][\"content\"]\n        chat_history[user_id].append({\"role\": \"assistant\", \"content\": reply})\n    embed = discord.Embed(\n        description=reply[:4000],\n        color=0x00ff88\n    )\n    embed.set_author(name=f\"Answer for {ctx.author.name}\")\n    await ctx.send(embed=embed)\n\n@bot.command()\nasync def reset(ctx):\n    user_id = str(ctx.author.id)\n    chat_history.pop(user_id, None)\n    await ctx.send(f\"🧹 Chat history cleared, {ctx.author.mention}!\")\n\nbot.run(\"YOUR_TOKEN\")",
+     quiz:[
+       {q:"What does ctx.typing() do?",opts:["Types a message","Shows 'Bot is typing...' in Discord","Logs the message","Sends a reply"],ans:1,exp:"ctx.typing() shows the typing indicator in Discord while your bot waits for the AI response."},
+       {q:"Why slice the reply with [:4000]?",opts:["To save memory","Discord has a character limit per message","To speed up response","To remove formatting"],ans:1,exp:"Discord has limits on message length so we slice the AI response to fit within the limit."},
+       {q:"What does resetting chat history do?",opts:["Deletes messages","Clears the AI's memory so it starts fresh","Bans the user","Restarts the bot"],ans:1,exp:"Clearing chat_history removes the conversation so the AI starts with no memory of past messages."},
+     ]},
+    {title:"Final Bot",desc:"Your complete feature-rich Discord bot",
+     intro:{
+       goal:"This is your complete Discord bot — everything combined. Commands, events, moderation, AI, and a help menu. When you finish typing this you'll have a fully featured bot ready to deploy to any Discord server.",
+       defs:[
+         {k:"cogs",v:"A way to organize bot commands into separate files. Keeps large bots clean and modular."},
+         {k:"bot.change_presence()",v:"Changes the bot's status message shown under its name in Discord."},
+         {k:"discord.Activity",v:"Sets what the bot appears to be doing — Playing, Watching, Listening to."},
+         {k:"commands.Cooldown",v:"Limits how often a user can run a command. Prevents spam."},
+         {k:"@commands.cooldown()",v:"Decorator that adds a cooldown to a command. Takes rate, per, and type."},
+         {k:"tasks.loop()",v:"A background task that runs on a schedule — like posting daily messages."},
+       ]
+     },
+     code:"import discord\nfrom discord.ext import commands\nfrom discord.ext import tasks\nimport ollama\nimport datetime\n\nintents = discord.Intents.all()\nbot = commands.Bot(command_prefix=\"!\", intents=intents, help_command=None)\n\nBAD_WORDS = [\"spam\", \"scam\"]\nchat_history = {}\n\n@bot.event\nasync def on_ready():\n    await bot.change_presence(\n        activity=discord.Activity(\n            type=discord.ActivityType.watching,\n            name=f\"{len(bot.guilds)} servers\"\n        )\n    )\n    daily_message.start()\n    print(f\"{bot.user} is fully online!\")\n\n@tasks.loop(hours=24)\nasync def daily_message():\n    for guild in bot.guilds:\n        channel = discord.utils.get(guild.text_channels, name=\"general\")\n        if channel:\n            await channel.send(f\"☀️ Good morning! Today is {datetime.date.today().strftime('%B %d, %Y')}\")\n\n@bot.event\nasync def on_member_join(member):\n    channel = discord.utils.get(member.guild.text_channels, name=\"general\")\n    if channel:\n        await channel.send(f\"Welcome {member.mention} to **{member.guild.name}**! 🎉\")\n\n@bot.command()\nasync def help(ctx):\n    embed = discord.Embed(title=\"Bot Commands\", color=0x00ff88)\n    embed.add_field(name=\"!ask [question]\", value=\"Ask the AI anything\", inline=False)\n    embed.add_field(name=\"!reset\", value=\"Clear your AI chat history\", inline=False)\n    embed.add_field(name=\"!info\", value=\"Server information\", inline=False)\n    embed.add_field(name=\"!ping\", value=\"Check bot latency\", inline=False)\n    await ctx.send(embed=embed)\n\n@bot.command()\n@commands.cooldown(1, 10, commands.BucketType.user)\nasync def ask(ctx, *, question: str):\n    uid = str(ctx.author.id)\n    if uid not in chat_history:\n        chat_history[uid] = [{\"role\":\"system\",\"content\":\"You are a helpful Discord bot. Be concise.\"}]\n    chat_history[uid].append({\"role\":\"user\",\"content\":question})\n    async with ctx.typing():\n        res = ollama.chat(model=\"llama3.2\", messages=chat_history[uid])\n        reply = res[\"message\"][\"content\"]\n        chat_history[uid].append({\"role\":\"assistant\",\"content\":reply})\n    embed = discord.Embed(description=reply[:4000], color=0x00ff88)\n    embed.set_author(name=ctx.author.name)\n    await ctx.send(embed=embed)\n\n@bot.event\nasync def on_message(message):\n    if message.author == bot.user: return\n    for word in BAD_WORDS:\n        if word in message.content.lower():\n            await message.delete()\n            await message.channel.send(f\"{message.author.mention} That's not allowed here.\", delete_after=5)\n            return\n    await bot.process_commands(message)\n\nbot.run(\"YOUR_TOKEN\")",
+     quiz:[
+       {q:"What does tasks.loop(hours=24) do?",opts:["Runs the bot for 24 hours","Runs a function every 24 hours","Waits 24 hours before starting","Loops 24 times"],ans:1,exp:"tasks.loop() creates a background task that runs automatically on a schedule."},
+       {q:"What does @commands.cooldown() prevent?",opts:["Bot crashes","Command spam by limiting how often users can run it","Duplicate messages","Unauthorized use"],ans:1,exp:"cooldown() limits how often a user can trigger a command — great for preventing spam."},
+       {q:"What does bot.change_presence() do?",opts:["Changes the bot's name","Changes the bot's status shown in Discord","Changes the server name","Logs the bot out"],ans:1,exp:"change_presence() updates the status message shown under the bot's name in Discord."},
+     ]},
+  ]},
 };
 
 ["Online Store","Mobile App","Data Dashboard","Automation"].forEach(n=>{
