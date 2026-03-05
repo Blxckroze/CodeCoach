@@ -1208,8 +1208,8 @@ const TRACKS = {
      ]},
   ]};
 
-["Mobile App","Automation"].forEach(n=>{
-  TRACKS[n]={icon:n==="Mobile App"?"📱":"⚙️",lang:"python",
+["Mobile App"].forEach(n=>{
+  TRACKS[n]={icon:"📱",lang:"python",
     lessons:[{title:"Getting Started",desc:"Introduction to "+n,
       intro:{goal:"This track is coming soon! For now practice typing this starter code.",defs:[{k:"track",v:"A series of lessons that teach you to build one complete project."}]},
       code:"# Welcome to "+n+"!\nprint(\"Track: "+n+"\")\nprint(\"Status: Ready to learn!\")\nprint(\"Let's build something amazing.\")",
@@ -1217,6 +1217,117 @@ const TRACKS = {
     }]
   };
 });
+
+TRACKS["Automation"]={icon:"⚙️",lang:"python",lessons:[
+  {title:"File Automation",desc:"Automate boring file tasks with Python",
+   intro:{
+     goal:"You're going to write Python scripts that handle files automatically — renaming hundreds of files at once, organizing folders, finding duplicates. Tasks that would take you an hour manually done in seconds with code.",
+     defs:[
+       {k:"os module",v:"Python's built-in module for interacting with the operating system — files, folders, paths."},
+       {k:"os.listdir()",v:"Returns a list of all files and folders in a directory."},
+       {k:"os.rename()",v:"Renames or moves a file from one path to another."},
+       {k:"os.path.join()",v:"Safely combines folder and file names into a full path that works on any OS."},
+       {k:"os.makedirs()",v:"Creates a folder (and any parent folders needed) if it doesn't exist."},
+       {k:"shutil",v:"A Python module for high-level file operations like copying and moving files."},
+     ]
+   },
+   code:"import os\nimport shutil\nfrom pathlib import Path\n\n# ── FILE ORGANIZER ──────────────────────────────────────\n# Automatically sorts files into folders by extension\n\ndef organize_folder(folder_path):\n    folder = Path(folder_path)\n    # Define category folders\n    categories = {\n        \"Images\": [\".jpg\", \".jpeg\", \".png\", \".gif\", \".webp\"],\n        \"Documents\": [\".pdf\", \".docx\", \".txt\", \".xlsx\", \".csv\"],\n        \"Videos\": [\".mp4\", \".mov\", \".avi\", \".mkv\"],\n        \"Audio\": [\".mp3\", \".wav\", \".flac\"],\n        \"Code\": [\".py\", \".js\", \".html\", \".css\", \".json\"],\n    }\n    moved = 0\n    for file in folder.iterdir():\n        if file.is_file():\n            ext = file.suffix.lower()\n            for category, extensions in categories.items():\n                if ext in extensions:\n                    dest = folder / category\n                    dest.mkdir(exist_ok=True)\n                    shutil.move(str(file), str(dest / file.name))\n                    print(f\"Moved: {file.name} → {category}/\")\n                    moved += 1\n                    break\n    print(f\"\\nDone! Moved {moved} files.\")\n\n# ── BULK RENAME ─────────────────────────────────────────\ndef bulk_rename(folder, prefix, start=1):\n    folder = Path(folder)\n    files = sorted(folder.iterdir())\n    for i, file in enumerate(files, start):\n        if file.is_file():\n            new_name = f\"{prefix}_{i:03d}{file.suffix}\"\n            file.rename(folder / new_name)\n            print(f\"Renamed: {file.name} → {new_name}\")\n\n# Run it\nprint(\"File Automation Ready!\")\nprint(\"organize_folder('/path/to/folder') — sorts files by type\")\nprint(\"bulk_rename('/path', 'photo') — renames to photo_001, photo_002...\")",
+   quiz:[
+     {q:"What does os.path.join() do?",opts:["Joins two strings","Safely combines folder and file names into a path","Merges two files","Lists folder contents"],ans:1,exp:"os.path.join() builds file paths correctly for any OS — Windows uses \\ but Mac/Linux use /."},
+     {q:"What does shutil.move() do?",opts:["Copies a file","Deletes a file","Moves or renames a file to a new location","Creates a folder"],ans:2,exp:"shutil.move() moves a file to a new location — like dragging it in Finder or Explorer."},
+     {q:"What does exist_ok=True do in mkdir()?",opts:["Creates nested folders","Skips if folder already exists instead of throwing an error","Sets permissions","Names the folder"],ans:1,exp:"exist_ok=True means mkdir() won't crash if the folder already exists — it just does nothing."},
+   ]},
+  {title:"Web Scraping",desc:"Extract data from any website automatically",
+   intro:{
+     goal:"Web scraping lets you pull data from any website automatically — prices, job listings, news, sports scores. You're going to build scrapers using requests and BeautifulSoup that can collect data from the web without you lifting a finger.",
+     defs:[
+       {k:"web scraping",v:"Automatically extracting data from websites by downloading and parsing their HTML."},
+       {k:"requests",v:"A Python library for making HTTP requests — like a browser fetching a webpage."},
+       {k:"BeautifulSoup",v:"A Python library for parsing HTML and extracting data from it easily."},
+       {k:"CSS selector",v:"A pattern used to target specific HTML elements — like 'h2.title' or 'div.price'."},
+       {k:"find_all()",v:"BeautifulSoup method that returns all matching HTML elements on the page."},
+       {k:"User-Agent",v:"A header that identifies the browser making the request. Some sites block bots without it."},
+     ]
+   },
+   code:"import requests\nfrom bs4 import BeautifulSoup\nimport time\nimport csv\n\n# Install: pip install requests beautifulsoup4\n\nHEADERS = {\n    \"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\"\n}\n\n# ── SCRAPE QUOTES ────────────────────────────────────────\ndef scrape_quotes():\n    url = \"http://quotes.toscrape.com\"\n    all_quotes = []\n    page = 1\n    while True:\n        response = requests.get(f\"{url}/page/{page}/\", headers=HEADERS)\n        soup = BeautifulSoup(response.text, \"html.parser\")\n        quotes = soup.find_all(\"div\", class_=\"quote\")\n        if not quotes:\n            break\n        for q in quotes:\n            text = q.find(\"span\", class_=\"text\").get_text()\n            author = q.find(\"small\", class_=\"author\").get_text()\n            tags = [t.get_text() for t in q.find_all(\"a\", class_=\"tag\")]\n            all_quotes.append({\"quote\": text, \"author\": author, \"tags\": tags})\n            print(f\"{author}: {text[:60]}...\")\n        page += 1\n        time.sleep(1)  # Be polite — don't hammer the server\n        if page > 3:\n            break\n    return all_quotes\n\n# ── SAVE TO CSV ──────────────────────────────────────────\ndef save_to_csv(data, filename=\"quotes.csv\"):\n    with open(filename, \"w\", newline=\"\", encoding=\"utf-8\") as f:\n        writer = csv.DictWriter(f, fieldnames=[\"quote\", \"author\", \"tags\"])\n        writer.writeheader()\n        writer.writerows(data)\n    print(f\"\\nSaved {len(data)} quotes to {filename}\")\n\nquotes = scrape_quotes()\nsave_to_csv(quotes)\nprint(f\"\\nTotal quotes collected: {len(quotes)}\")",
+   quiz:[
+     {q:"What does requests.get() do?",opts:["Gets a variable","Downloads a webpage","Saves a file","Runs a function"],ans:1,exp:"requests.get() downloads the HTML content of a webpage — like a browser loading a URL."},
+     {q:"What is BeautifulSoup used for?",opts:["Making HTTP requests","Styling web pages","Parsing HTML to extract data","Saving CSV files"],ans:2,exp:"BeautifulSoup parses HTML and lets you find and extract specific elements easily."},
+     {q:"Why add time.sleep(1) between requests?",opts:["To speed things up","To be polite and not overwhelm the server","Required by Python","To save memory"],ans:1,exp:"Adding a delay between requests is good practice — hammering a server too fast can get your IP blocked."},
+   ]},
+  {title:"Email Automation",desc:"Send and manage emails automatically",
+   intro:{
+     goal:"You're going to automate emails with Python — send personalized emails to a list of people, read your inbox, and build an auto-responder. This is how marketers send thousands of personalized emails and how businesses automate customer communication.",
+     defs:[
+       {k:"smtplib",v:"Python's built-in library for sending emails via SMTP (email protocol)."},
+       {k:"SMTP",v:"Simple Mail Transfer Protocol — the standard for sending email across the internet."},
+       {k:"MIMEMultipart",v:"A Python object for building emails that can have both plain text and HTML content."},
+       {k:"imaplib",v:"Python library for reading and managing emails from your inbox via IMAP."},
+       {k:"App Password",v:"A special password for third-party apps. Gmail requires this instead of your real password."},
+       {k:"mail merge",v:"Sending personalized emails to many people by replacing template variables with their data."},
+     ]
+   },
+   code:"import smtplib\nimport imaplib\nimport email\nfrom email.mime.multipart import MIMEMultipart\nfrom email.mime.text import MIMEText\nfrom string import Template\n\n# Gmail setup:\n# 1. Go to Google Account → Security → 2-Step Verification\n# 2. Then App Passwords → generate one for Mail\n# Use that App Password below — NOT your real password\n\nEMAIL = \"your@gmail.com\"\nAPP_PASSWORD = \"your_app_password\"\n\n# ── SEND ONE EMAIL ───────────────────────────────────────\ndef send_email(to, subject, html_body):\n    msg = MIMEMultipart(\"alternative\")\n    msg[\"From\"] = EMAIL\n    msg[\"To\"] = to\n    msg[\"Subject\"] = subject\n    msg.attach(MIMEText(html_body, \"html\"))\n    with smtplib.SMTP_SSL(\"smtp.gmail.com\", 465) as server:\n        server.login(EMAIL, APP_PASSWORD)\n        server.sendmail(EMAIL, to, msg.as_string())\n    print(f\"✅ Sent to {to}\")\n\n# ── MAIL MERGE — personalized emails ─────────────────────\ndef send_bulk(contacts, subject_template, body_template):\n    for contact in contacts:\n        subject = Template(subject_template).substitute(contact)\n        body = Template(body_template).substitute(contact)\n        send_email(contact[\"email\"], subject, body)\n        print(f\"Sent to {contact['name']}\")\n\n# Example contacts list\ncontacts = [\n    {\"name\": \"Alex\", \"email\": \"alex@example.com\", \"product\": \"AI Bot\"},\n    {\"name\": \"Jordan\", \"email\": \"jordan@example.com\", \"product\": \"Website Bundle\"},\n]\n\nsubject = \"Hey $name, your $product is ready!\"\nbody = \"\"\"<h2>Hey $name! 👋</h2>\n<p>Your <strong>$product</strong> is ready to go.</p>\n<p>Click below to get started:</p>\n<a href='#' style='background:#00aa55;color:white;padding:12px 24px;border-radius:8px;text-decoration:none'>Get Started →</a>\"\"\"\n\nprint(\"Email automation ready!\")\nprint(f\"Would send to {len(contacts)} contacts\")\nprint(\"Uncomment send_bulk() when your credentials are set up.\")\n# send_bulk(contacts, subject, body)",
+   quiz:[
+     {q:"What is smtplib used for?",opts:["Reading emails","Sending emails via SMTP","Parsing HTML","Storing contacts"],ans:1,exp:"smtplib is Python's built-in library for sending emails using the SMTP protocol."},
+     {q:"What is a mail merge?",opts:["Combining two email accounts","Sending personalized emails by replacing template variables","Forwarding emails","Archiving emails"],ans:1,exp:"Mail merge sends personalized emails to many people — replacing $name, $product etc. with real values."},
+     {q:"Why use an App Password instead of your real password?",opts:["It's easier to remember","Security — your real password is never exposed to third-party code","It's required by Python","App passwords are longer"],ans:1,exp:"App passwords are limited-scope passwords so your real password is never exposed in your code."},
+   ]},
+  {title:"Task Scheduler",desc:"Run scripts automatically on a schedule",
+   intro:{
+     goal:"You're going to build a task scheduler that runs your automations on a schedule — every morning at 8am, every hour, every Monday. This is how real automation systems work. You set it and forget it.",
+     defs:[
+       {k:"schedule library",v:"A Python library that runs functions at specified times — like cron but in Python."},
+       {k:"cron",v:"A Unix tool for scheduling tasks. schedule is a Python-friendly alternative."},
+       {k:"daemon",v:"A background process that runs continuously. Your scheduler runs as a daemon."},
+       {k:"threading",v:"Running multiple tasks at the same time in Python."},
+       {k:"logging",v:"Recording what your automation did and when — essential for debugging scheduled tasks."},
+       {k:"while True",v:"An infinite loop that keeps your scheduler running forever until you stop it."},
+     ]
+   },
+   code:"import schedule\nimport time\nimport logging\nimport datetime\nfrom pathlib import Path\n\n# Install: pip install schedule\n\n# ── SET UP LOGGING ───────────────────────────────────────\nlogging.basicConfig(\n    level=logging.INFO,\n    format=\"%(asctime)s [%(levelname)s] %(message)s\",\n    handlers=[\n        logging.FileHandler(\"automation.log\"),\n        logging.StreamHandler()\n    ]\n)\nlog = logging.getLogger()\n\n# ── TASKS ────────────────────────────────────────────────\ndef morning_report():\n    log.info(\"Running morning report...\")\n    today = datetime.date.today()\n    report = f\"Morning Report — {today}\\n\"\n    report += f\"Day of week: {today.strftime('%A')}\\n\"\n    report += f\"Time: {datetime.datetime.now().strftime('%H:%M')}\\n\"\n    Path(\"reports\").mkdir(exist_ok=True)\n    Path(f\"reports/report_{today}.txt\").write_text(report)\n    log.info(f\"Report saved: reports/report_{today}.txt\")\n\ndef hourly_backup():\n    log.info(\"Running hourly backup...\")\n    # Add your backup logic here\n    log.info(\"Backup complete\")\n\ndef weekly_cleanup():\n    log.info(\"Running weekly cleanup...\")\n    # Add cleanup logic here\n    log.info(\"Cleanup complete\")\n\ndef health_check():\n    log.info(\"Health check: all systems running\")\n\n# ── SCHEDULE ─────────────────────────────────────────────\nschedule.every().day.at(\"08:00\").do(morning_report)\nschedule.every().hour.do(hourly_backup)\nschedule.every().monday.at(\"09:00\").do(weekly_cleanup)\nschedule.every(5).minutes.do(health_check)\n\nlog.info(\"Scheduler started. Press Ctrl+C to stop.\")\nlog.info(f\"Next jobs scheduled:\")\nfor job in schedule.jobs:\n    log.info(f\"  {job}\")\n\n# ── MAIN LOOP ────────────────────────────────────────────\nwhile True:\n    schedule.run_pending()\n    time.sleep(30)",
+   quiz:[
+     {q:"What does schedule.every().day.at('08:00').do(task) do?",opts:["Runs task once","Runs task every day at 8am","Runs task every 8 hours","Schedules task for 8 minutes"],ans:1,exp:"This runs the task function every day at exactly 8:00am."},
+     {q:"Why use logging instead of print()?",opts:["Logging is faster","Logging adds timestamps and saves to a file automatically","print() doesn't work in schedulers","Logging is required"],ans:1,exp:"logging adds timestamps, severity levels, and can save to a file — essential for unattended scripts."},
+     {q:"What does the while True loop do in a scheduler?",opts:["Runs the task forever","Keeps the scheduler running so it can check for pending jobs","Crashes the program","Runs all jobs at once"],ans:1,exp:"while True keeps the program alive so schedule.run_pending() can check and run jobs continuously."},
+   ]},
+  {title:"API Automation",desc:"Connect apps and automate workflows",
+   intro:{
+     goal:"You're going to connect real APIs together to build automations — when X happens do Y. Like automatically posting to Twitter when you publish a blog post, or saving form responses to a Google Sheet. This is what Zapier does, but you're building it yourself.",
+     defs:[
+       {k:"API key",v:"A secret string that authenticates your app with an external service."},
+       {k:"REST API",v:"A web API that uses HTTP methods (GET, POST, DELETE) to perform actions."},
+       {k:"webhook",v:"A URL your app exposes so other services can notify it when something happens."},
+       {k:"payload",v:"The data sent in the body of a POST request — usually JSON."},
+       {k:"headers",v:"Key-value pairs sent with HTTP requests. Used for authentication and content type."},
+       {k:"rate limit",v:"A cap on how many API requests you can make per minute or hour."},
+     ]
+   },
+   code:"import requests\nimport json\nimport time\nfrom datetime import datetime\n\n# ── NOTION API AUTOMATION ────────────────────────────────\n# Automatically add rows to a Notion database\n# Get your token at: notion.so/my-integrations\n\nNOTION_TOKEN = \"your_notion_token\"\nDATABASE_ID = \"your_database_id\"\n\ndef add_to_notion(title, status, notes):\n    url = f\"https://api.notion.com/v1/pages\"\n    headers = {\n        \"Authorization\": f\"Bearer {NOTION_TOKEN}\",\n        \"Content-Type\": \"application/json\",\n        \"Notion-Version\": \"2022-06-28\"\n    }\n    payload = {\n        \"parent\": {\"database_id\": DATABASE_ID},\n        \"properties\": {\n            \"Name\": {\"title\": [{\"text\": {\"content\": title}}]},\n            \"Status\": {\"select\": {\"name\": status}},\n            \"Notes\": {\"rich_text\": [{\"text\": {\"content\": notes}}]}\n        }\n    }\n    res = requests.post(url, headers=headers, json=payload)\n    if res.status_code == 200:\n        print(f\"✅ Added to Notion: {title}\")\n    else:\n        print(f\"❌ Error: {res.status_code} — {res.text}\")\n    return res.json()\n\n# ── SLACK NOTIFICATION ───────────────────────────────────\ndef notify_slack(webhook_url, message):\n    payload = {\"text\": message}\n    res = requests.post(webhook_url, json=payload)\n    print(\"✅ Slack notified\" if res.status_code == 200 else f\"❌ Slack error: {res.status_code}\")\n\n# ── COMBINED WORKFLOW ────────────────────────────────────\ndef log_and_notify(task_name, status, notes, slack_webhook=None):\n    print(f\"\\n[{datetime.now().strftime('%H:%M:%S')}] Running: {task_name}\")\n    add_to_notion(task_name, status, notes)\n    if slack_webhook:\n        notify_slack(slack_webhook, f\"✅ Task complete: {task_name} — {status}\")\n\nprint(\"API Automation ready!\")\nprint(\"Connects Notion + Slack automatically\")\nprint(\"Set your NOTION_TOKEN and DATABASE_ID to use it.\")",
+   quiz:[
+     {q:"What is a webhook?",opts:["A type of API key","A URL your app exposes so other services can notify it","A Python library","A rate limit setting"],ans:1,exp:"A webhook is a URL you expose — other services POST to it when events happen, triggering your code."},
+     {q:"What goes in the Authorization header?",opts:["The URL","Your API key or token for authentication","The request method","The response format"],ans:1,exp:"The Authorization header contains your API key or token so the service knows who you are."},
+     {q:"What is a rate limit?",opts:["The max file size","A cap on how many API requests you can make per time period","The timeout duration","The max payload size"],ans:1,exp:"Rate limits cap how many requests you can make per minute or hour — exceed it and you get blocked temporarily."},
+   ]},
+  {title:"Final Automation",desc:"Your complete automation system",
+   intro:{
+     goal:"This is your complete automation system — a command-line tool that runs all your automations from one place. File organizer, web scraper, email sender, scheduler, and API connector all wired together into one professional script you can actually use.",
+     defs:[
+       {k:"argparse",v:"Python's built-in library for building command-line interfaces with arguments and flags."},
+       {k:"CLI",v:"Command Line Interface — a program you run and control from the terminal."},
+       {k:"config file",v:"A JSON or YAML file that stores settings so you don't hardcode values in your script."},
+       {k:"dotenv",v:"A library that loads environment variables from a .env file — keeps secrets out of your code."},
+       {k:"try/except",v:"Error handling that catches failures so your automation keeps running even if one task fails."},
+       {k:"__main__",v:"The block that runs when you execute the script directly — not when it's imported."},
+     ]
+   },
+   code:"import argparse\nimport json\nimport logging\nimport schedule\nimport time\nimport os\nfrom pathlib import Path\nfrom datetime import datetime\n\n# ── LOGGING ──────────────────────────────────────────────\nlogging.basicConfig(\n    level=logging.INFO,\n    format=\"%(asctime)s [%(levelname)s] %(message)s\",\n    handlers=[logging.FileHandler(\"bot.log\"), logging.StreamHandler()]\n)\nlog = logging.getLogger()\n\n# ── CONFIG ───────────────────────────────────────────────\ndef load_config(path=\"config.json\"):\n    if Path(path).exists():\n        with open(path) as f:\n            return json.load(f)\n    default = {\n        \"watch_folder\": \"./downloads\",\n        \"report_folder\": \"./reports\",\n        \"schedule_interval\": 60,\n        \"notify_slack\": False\n    }\n    with open(path, \"w\") as f:\n        json.dump(default, f, indent=2)\n    log.info(f\"Created default config: {path}\")\n    return default\n\n# ── TASKS ────────────────────────────────────────────────\ndef run_organizer(config):\n    folder = config.get(\"watch_folder\", \".\")\n    log.info(f\"Organizing: {folder}\")\n    # Add file organizer logic here\n    log.info(\"Organizer complete\")\n\ndef run_report(config):\n    folder = Path(config.get(\"report_folder\", \"./reports\"))\n    folder.mkdir(exist_ok=True)\n    filename = folder / f\"report_{datetime.now().strftime('%Y%m%d_%H%M')}.txt\"\n    content = f\"Automation Report\\nGenerated: {datetime.now()}\\nStatus: All systems running\\n\"\n    filename.write_text(content)\n    log.info(f\"Report saved: {filename}\")\n\ndef run_all(config):\n    log.info(\"Running all automations...\")\n    try: run_organizer(config)\n    except Exception as e: log.error(f\"Organizer failed: {e}\")\n    try: run_report(config)\n    except Exception as e: log.error(f\"Report failed: {e}\")\n    log.info(\"All tasks complete\")\n\n# ── CLI ───────────────────────────────────────────────────\ndef main():\n    parser = argparse.ArgumentParser(description=\"AutoBot — Your automation system\")\n    parser.add_argument(\"command\", choices=[\"run\", \"organize\", \"report\", \"schedule\"], help=\"Task to run\")\n    parser.add_argument(\"--config\", default=\"config.json\", help=\"Config file path\")\n    args = parser.parse_args()\n    config = load_config(args.config)\n    if args.command == \"run\": run_all(config)\n    elif args.command == \"organize\": run_organizer(config)\n    elif args.command == \"report\": run_report(config)\n    elif args.command == \"schedule\":\n        log.info(\"Starting scheduler...\")\n        schedule.every(config[\"schedule_interval\"]).minutes.do(run_all, config)\n        while True:\n            schedule.run_pending()\n            time.sleep(30)\n\nif __name__ == \"__main__\":\n    main()",
+   quiz:[
+     {q:"What does argparse do?",opts:["Parses JSON files","Builds command-line interfaces with arguments","Sends HTTP requests","Reads environment variables"],ans:1,exp:"argparse builds CLI tools — it parses arguments like 'python bot.py run --config prod.json'."},
+     {q:"What is a .env file used for?",opts:["Storing Python code","Storing environment variables and secrets out of your code","Configuring the terminal","Logging errors"],ans:1,exp:"A .env file stores secrets like API keys so they're never hardcoded in your script or pushed to GitHub."},
+     {q:"What does if __name__ == '__main__' do?",opts:["Imports the module","Runs the code only when the script is executed directly","Defines the main function","Starts the scheduler"],ans:1,exp:"This block only runs when you execute the script directly — not when another script imports it."},
+   ]},
+]};
 
 // ── STATE ────────────────────────────────────────────────────
 let S = {
