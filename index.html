@@ -171,7 +171,30 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
 .icard p { font-size: .85rem; color: var(--muted); font-family: var(--mono); line-height: 1.7; }
 .cs { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: .75rem 1rem; font-family: var(--mono); font-size: .85rem; color: var(--accent); margin-top: .75rem; word-break: break-all; }
 
-/* PRE-LESSON READING */
+/* STUDENT CARDS */
+.s-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap: 1rem; margin-top: 1rem; }
+.s-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; transition: border-color .2s; }
+.s-card:hover { border-color: var(--accent); }
+.s-card-hdr { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+.s-name { font-weight: 700; font-size: 1rem; margin-bottom: .2rem; }
+.s-code { font-family: var(--mono); font-size: .7rem; color: var(--muted); }
+.s-status { font-family: var(--mono); font-size: .65rem; padding: .25rem .6rem; border-radius: 99px; }
+.s-status.active { background: rgba(0,255,136,.15); color: var(--accent); }
+.s-status.never { background: rgba(255,100,100,.12); color: #ff6464; }
+.s-status.inactive { background: rgba(107,107,128,.2); color: var(--muted); }
+.s-track { font-family: var(--mono); font-size: .75rem; color: var(--muted); margin-bottom: .75rem; }
+.s-progress-label { display: flex; justify-content: space-between; font-family: var(--mono); font-size: .7rem; color: var(--muted); margin-bottom: .35rem; }
+.s-prog-bar { background: var(--surface2); border-radius: 99px; height: 8px; margin-bottom: .75rem; }
+.s-prog-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg,var(--accent2),var(--accent)); transition: width .4s; }
+.s-stats { display: flex; gap: .75rem; }
+.s-stat { flex: 1; background: var(--bg); border-radius: 8px; padding: .5rem; text-align: center; }
+.s-stat .sv { font-family: var(--mono); font-size: .9rem; font-weight: 700; color: var(--accent); }
+.s-stat .sl { font-family: var(--mono); font-size: .6rem; color: var(--muted); margin-top: .15rem; }
+.s-last { font-family: var(--mono); font-size: .65rem; color: var(--muted); margin-top: .75rem; text-align: right; }
+.dash-stats { display: grid; grid-template-columns: repeat(auto-fill,minmax(160px,1fr)); gap: 1rem; margin-bottom: 2rem; }
+.dash-stat { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; text-align: center; }
+.dash-stat .dv { font-size: 2rem; font-weight: 800; color: var(--accent); font-family: var(--mono); }
+.dash-stat .dl { font-size: .75rem; color: var(--muted); font-family: var(--mono); margin-top: .25rem; }
 #lesson-intro { min-height: 100vh; padding: 2rem; max-width: 800px; margin: 0 auto; }
 .intro-hdr { margin-bottom: 2rem; }
 .intro-hdr .step { font-family: var(--mono); font-size: .75rem; color: var(--accent); letter-spacing: 2px; margin-bottom: .5rem; }
@@ -356,13 +379,13 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
     <div class="icard"><h3>📊 Quick Stats</h3><p>Go to the Students tab to see all students, their XP, lesson progress and last active date — live from your Google Sheet.</p></div>
   </div>
   <div id="t-students" class="tc">
-    <p style="font-family:var(--mono);font-size:.8rem;color:var(--muted);margin-bottom:1rem">Live from your Google Sheet:</p>
+    <div class="dash-stats" id="dash-stats"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
+      <p style="font-family:var(--mono);font-size:.8rem;color:var(--muted)">Live from your Google Sheet:</p>
+      <button class="bsm" onclick="loadStudents()">🔄 Refresh</button>
+    </div>
     <div id="sload" style="font-family:var(--mono);font-size:.85rem;color:var(--accent)">Loading students...</div>
-    <table class="stbl" id="stbl" style="display:none">
-      <thead><tr><th>CODE</th><th>NAME</th><th>TRACK</th><th>CLASS</th><th>STATUS</th><th>XP</th><th>LESSON</th><th>LAST ACTIVE</th></tr></thead>
-      <tbody id="stbody"></tbody>
-    </table>
-    <button class="bsm" onclick="loadStudents()" style="margin-top:1rem">🔄 Refresh</button>
+    <div class="s-grid" id="s-grid"></div>
   </div>
   <div id="t-rewards" class="tc">
     <p style="font-family:var(--mono);font-size:.8rem;color:var(--muted);margin-bottom:1rem">Students who completed their track and claimed a free upgrade:</p>
@@ -1043,15 +1066,57 @@ function swTab(name,el){
   if(name==="rewards") loadRewards();
 }
 async function loadStudents(){
-  const tbody=document.getElementById("stbody");
-  const tbl=document.getElementById("stbl");
+  const grid=document.getElementById("s-grid");
   const ld=document.getElementById("sload");
-  ld.style.display="block"; tbl.style.display="none";
+  const statsEl=document.getElementById("dash-stats");
+  ld.style.display="block"; ld.textContent="Loading students..."; grid.innerHTML=""; statsEl.innerHTML="";
   const res=await sheetReq({action:"allStudents"});
   ld.style.display="none";
-  if(!res||!res.students||!res.students.length){ld.textContent="No students yet. Add them to your Google Sheet!";ld.style.display="block";return;}
-  tbody.innerHTML=res.students.map(s=>`<tr><td><code style="color:var(--accent)">${s.code||"-"}</code></td><td>${s.name||"-"}</td><td>${s.track||"-"}</td><td>${s.class||"-"}</td><td><span class="sbadge ${s.status==="Active"?"sa":"si2"}">${s.status||"Active"}</span></td><td>${s.xp||0}</td><td>${s.lessonIdx||0}</td><td>${s.lastActive||"Never"}</td></tr>`).join("");
-  tbl.style.display="table";
+  if(!res||!res.students||!res.students.length){
+    ld.textContent="No students yet. Add them to your Google Sheet!";
+    ld.style.display="block"; return;
+  }
+  const students=res.students;
+  const total=students.length;
+  const active=students.filter(s=>s.lastActive&&s.lastActive!=="Never").length;
+  const neverLogged=students.filter(s=>!s.lastActive||s.lastActive==="Never").length;
+  const avgXP=Math.round(students.reduce((a,s)=>a+(parseInt(s.xp)||0),0)/total);
+  statsEl.innerHTML=`
+    <div class="dash-stat"><div class="dv">${total}</div><div class="dl">TOTAL STUDENTS</div></div>
+    <div class="dash-stat"><div class="dv">${active}</div><div class="dl">HAVE LOGGED IN</div></div>
+    <div class="dash-stat"><div class="dv">${neverLogged}</div><div class="dl">NEVER OPENED IT</div></div>
+    <div class="dash-stat"><div class="dv">${avgXP}</div><div class="dl">AVG XP</div></div>
+  `;
+  grid.innerHTML=students.map(s=>{
+    const trackData=TRACKS[s.track]||TRACKS["AI Bot"];
+    const totalLessons=trackData.lessons.length;
+    const lessonDone=parseInt(s.lessonIdx)||0;
+    const pct=Math.round((lessonDone/totalLessons)*100);
+    const neverOpened=!s.lastActive||s.lastActive==="Never";
+    const statusClass=neverOpened?"never":s.status==="Active"?"active":"inactive";
+    const statusLabel=neverOpened?"Never Opened":s.status==="Active"?"Active":"Inactive";
+    return `<div class="s-card">
+      <div class="s-card-hdr">
+        <div>
+          <div class="s-name">${s.name||"Unknown"}</div>
+          <div class="s-code">${s.code||""} · ${s.class||"No class"}</div>
+        </div>
+        <span class="s-status ${statusClass}">${statusLabel}</span>
+      </div>
+      <div class="s-track">${trackData.icon} ${s.track||"AI Bot"}</div>
+      <div class="s-progress-label">
+        <span>Progress</span>
+        <span>${lessonDone} / ${totalLessons} lessons (${pct}%)</span>
+      </div>
+      <div class="s-prog-bar"><div class="s-prog-fill" style="width:${pct}%"></div></div>
+      <div class="s-stats">
+        <div class="s-stat"><div class="sv">${s.xp||0}</div><div class="sl">XP</div></div>
+        <div class="s-stat"><div class="sv">${lessonDone}</div><div class="sl">LESSONS</div></div>
+        <div class="s-stat"><div class="sv">${pct}%</div><div class="sl">DONE</div></div>
+      </div>
+      <div class="s-last">Last active: ${s.lastActive||"Never"}</div>
+    </div>`;
+  }).join("");
 }
 
 async function loadRewards(){
