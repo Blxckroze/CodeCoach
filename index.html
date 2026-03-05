@@ -201,6 +201,22 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
 .rdesc { width: 100%; padding: .875rem 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: var(--mono); font-size: .85rem; resize: none; outline: none; margin-bottom: 1rem; transition: border-color .2s; }
 .rdesc:focus { border-color: var(--accent); }
 .rsent { color: var(--accent); font-family: var(--mono); font-size: .85rem; margin-bottom: 1rem; display: none; }
+/* AI TUTOR */
+#tutor-btn { position: fixed; bottom: 1.5rem; right: 1.5rem; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg,var(--accent2),var(--accent)); border: none; cursor: pointer; font-size: 1.5rem; display: none; align-items: center; justify-content: center; z-index: 300; box-shadow: 0 4px 20px rgba(0,255,136,.3); transition: transform .2s; }
+#tutor-btn:hover { transform: scale(1.1); }
+#tutor-panel { position: fixed; bottom: 5.5rem; right: 1.5rem; width: 340px; background: var(--surface); border: 1px solid var(--accent); border-radius: 16px; z-index: 300; display: none; flex-direction: column; box-shadow: 0 8px 40px rgba(0,255,136,.15); overflow: hidden; max-height: 500px; }
+.tutor-hdr { background: var(--surface2); padding: .875rem 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+.tutor-hdr span { font-family: var(--mono); font-size: .8rem; color: var(--accent); font-weight: 700; }
+.tutor-hdr button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1rem; }
+.tutor-msgs { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: .75rem; min-height: 200px; max-height: 300px; }
+.tmsg { padding: .75rem 1rem; border-radius: 10px; font-size: .82rem; line-height: 1.6; font-family: var(--mono); }
+.tmsg.bot { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.tmsg.user { background: rgba(0,255,136,.1); color: var(--accent); border: 1px solid rgba(0,255,136,.2); align-self: flex-end; }
+.tmsg.thinking { color: var(--muted); font-style: italic; }
+.tutor-input { display: flex; gap: .5rem; padding: .75rem; border-top: 1px solid var(--border); }
+.tutor-input input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: .5rem .75rem; color: var(--text); font-family: var(--mono); font-size: .82rem; outline: none; }
+.tutor-input input:focus { border-color: var(--accent); }
+.tutor-input button { background: var(--accent); border: none; border-radius: 8px; padding: .5rem .875rem; color: #000; font-weight: 700; cursor: pointer; font-size: .85rem; }
 #wb { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--accent); border-radius: 14px; padding: 1rem 1.5rem; display: none; align-items: center; gap: 1.5rem; z-index: 50; box-shadow: 0 8px 32px rgba(0,255,136,.15); white-space: nowrap; }
 #wb p { font-family: var(--mono); font-size: .8rem; }
 #wb span.hi { color: var(--accent); font-weight: 700; }
@@ -414,6 +430,22 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
   </div>
 </div>
 
+<!-- AI TUTOR -->
+<button id="tutor-btn" onclick="toggleTutor()">🤖</button>
+<div id="tutor-panel">
+  <div class="tutor-hdr">
+    <span>🤖 AI Tutor — Ask anything</span>
+    <button onclick="toggleTutor()">✕</button>
+  </div>
+  <div class="tutor-msgs" id="tutor-msgs">
+    <div class="tmsg bot">Hey! I'm your AI tutor. Ask me anything about the code you're learning — what a line does, why it's written that way, or how a concept works.</div>
+  </div>
+  <div class="tutor-input">
+    <input id="tutor-q" type="text" placeholder="Ask a question..." onkeydown="if(event.key==='Enter')askTutor()">
+    <button onclick="askTutor()">→</button>
+  </div>
+</div>
+
 <!-- WELCOME BACK -->
 <div id="wb">
   <p>Welcome back, <span class="hi" id="wbn">Student</span>! <span id="wbs"></span></p>
@@ -559,12 +591,112 @@ const TRACKS = {
   ]},
   "Game":{icon:"🎮",lang:"javascript",lessons:[
     {title:"Canvas Setup",desc:"Create your game window",
-     code:"const canvas = document.getElementById(\"gameCanvas\");\nconst ctx = canvas.getContext(\"2d\");\n\ncanvas.width = 800;\ncanvas.height = 600;\n\nctx.fillStyle = \"#1a1a2e\";\nctx.fillRect(0, 0, canvas.width, canvas.height);\n\nctx.fillStyle = \"#00ff88\";\nctx.fillRect(100, 100, 40, 40);\n\nctx.fillStyle = \"white\";\nctx.font = \"24px Arial\";\nctx.fillText(\"Score: 0\", 20, 30);",
+     intro:{
+       goal:"You're setting up the HTML5 Canvas — the blank screen where your entire game will be drawn. Think of it like an Etch A Sketch. You get a reference to it, set the size, then start drawing shapes with code.",
+       defs:[
+         {k:"canvas",v:"An HTML element that acts as a drawing surface for your game."},
+         {k:"getContext('2d')",v:"Gets the 2D drawing tool from the canvas. Everything you draw uses this."},
+         {k:"ctx",v:"Short for context — your drawing tool. You use ctx.something to draw everything."},
+         {k:"fillStyle",v:"Sets the color used to fill shapes. Can be a hex color, name, or rgb value."},
+         {k:"fillRect(x,y,w,h)",v:"Draws a filled rectangle at position x,y with the given width and height."},
+         {k:"fillText(text,x,y)",v:"Draws text on the canvas at position x,y."},
+       ]
+     },
+     code:"const canvas = document.getElementById(\"gameCanvas\");\nconst ctx = canvas.getContext(\"2d\");\n\ncanvas.width = 800;\ncanvas.height = 600;\n\n// Draw background\nctx.fillStyle = \"#1a1a2e\";\nctx.fillRect(0, 0, canvas.width, canvas.height);\n\n// Draw player\nctx.fillStyle = \"#00ff88\";\nctx.fillRect(100, 100, 40, 40);\n\n// Draw score text\nctx.fillStyle = \"white\";\nctx.font = \"24px Arial\";\nctx.fillText(\"Score: 0\", 20, 30);\n\nconsole.log(\"Canvas ready!\");",
      quiz:[
-       {q:"What does getContext('2d') return?",opts:["The canvas element","A drawing tool","The window size","An image"],ans:1,exp:"getContext('2d') returns the 2D drawing context."},
-       {q:"What does fillRect() draw?",opts:["A circle","A line","A filled rectangle","An image"],ans:2,exp:"fillRect(x, y, width, height) draws a filled rectangle."},
-       {q:"What sets the drawing color?",opts:["ctx.color","ctx.fillStyle","ctx.paint","ctx.setColor"],ans:1,exp:"ctx.fillStyle sets the color used for filling shapes."}
-     ]}
+       {q:"What does getContext('2d') return?",opts:["The canvas element","A drawing tool","The window size","An image"],ans:1,exp:"getContext('2d') returns the 2D drawing context used to draw everything."},
+       {q:"What does fillRect() draw?",opts:["A circle","A line","A filled rectangle","An image"],ans:2,exp:"fillRect(x, y, width, height) draws a filled rectangle at that position."},
+       {q:"What sets the drawing color?",opts:["ctx.color","ctx.fillStyle","ctx.paint","ctx.setColor"],ans:1,exp:"ctx.fillStyle sets the color used for filling shapes."},
+     ]},
+    {title:"Game Loop",desc:"Make your game run continuously",
+     intro:{
+       goal:"Every game runs on a loop — it clears the screen, redraws everything, and repeats 60 times per second. You're going to build that loop using requestAnimationFrame, which is what powers every browser game ever made.",
+       defs:[
+         {k:"game loop",v:"A function that runs over and over, updating and redrawing the game every frame."},
+         {k:"requestAnimationFrame",v:"A browser function that calls your game loop ~60 times per second, synced to the screen."},
+         {k:"clearRect()",v:"Erases a section of the canvas. Used to wipe the screen before redrawing each frame."},
+         {k:"frame",v:"One single draw of the screen. At 60fps your game draws 60 frames every second."},
+         {k:"deltaTime",v:"The time between frames. Used to make movement speed consistent on all devices."},
+       ]
+     },
+     code:"const canvas = document.getElementById(\"gameCanvas\");\nconst ctx = canvas.getContext(\"2d\");\ncanvas.width = 800;\ncanvas.height = 600;\n\nlet x = 100;\nlet y = 300;\nlet speed = 2;\n\nfunction gameLoop() {\n    // Clear screen\n    ctx.clearRect(0, 0, canvas.width, canvas.height);\n\n    // Draw background\n    ctx.fillStyle = \"#1a1a2e\";\n    ctx.fillRect(0, 0, canvas.width, canvas.height);\n\n    // Move player\n    x += speed;\n    if (x > canvas.width) x = 0;\n\n    // Draw player\n    ctx.fillStyle = \"#00ff88\";\n    ctx.fillRect(x, y, 40, 40);\n\n    // Keep looping\n    requestAnimationFrame(gameLoop);\n}\n\ngameLoop();",
+     quiz:[
+       {q:"What does requestAnimationFrame do?",opts:["Pauses the game","Calls your loop ~60x per second","Draws a frame","Clears the canvas"],ans:1,exp:"requestAnimationFrame calls your game loop ~60 times per second synced to the display."},
+       {q:"Why do we clearRect() every frame?",opts:["To save memory","To erase old positions before redrawing","To reset score","To stop the loop"],ans:1,exp:"Without clearing, old frames stack up and you see a trail instead of smooth movement."},
+       {q:"What happens when x > canvas.width?",opts:["Game over","Player resets to x=0","Speed increases","Player stops"],ans:1,exp:"x resets to 0 so the player wraps around to the left side of the screen."},
+     ]},
+    {title:"Player Movement",desc:"Control your character with the keyboard",
+     intro:{
+       goal:"Now you're going to add keyboard controls so the player can actually move the character. You'll listen for keydown and keyup events and store which keys are pressed so the game loop can react to them every frame.",
+       defs:[
+         {k:"addEventListener",v:"Attaches a function to an event like keydown or keyup."},
+         {k:"keydown",v:"An event that fires when a key is pressed down."},
+         {k:"keyup",v:"An event that fires when a key is released."},
+         {k:"event.key",v:"The name of the key that was pressed, like 'ArrowUp' or 'ArrowLeft'."},
+         {k:"keys object",v:"A JavaScript object used to track which keys are currently held down."},
+         {k:"boundary check",v:"An if statement that stops the player from moving off the edge of the screen."},
+       ]
+     },
+     code:"const canvas = document.getElementById(\"gameCanvas\");\nconst ctx = canvas.getContext(\"2d\");\ncanvas.width = 800;\ncanvas.height = 600;\n\nconst player = { x: 380, y: 280, size: 40, speed: 4 };\nconst keys = {};\n\ndocument.addEventListener(\"keydown\", (e) => { keys[e.key] = true; });\ndocument.addEventListener(\"keyup\", (e) => { keys[e.key] = false; });\n\nfunction update() {\n    if (keys[\"ArrowUp\"] && player.y > 0)\n        player.y -= player.speed;\n    if (keys[\"ArrowDown\"] && player.y < canvas.height - player.size)\n        player.y += player.speed;\n    if (keys[\"ArrowLeft\"] && player.x > 0)\n        player.x -= player.speed;\n    if (keys[\"ArrowRight\"] && player.x < canvas.width - player.size)\n        player.x += player.speed;\n}\n\nfunction draw() {\n    ctx.fillStyle = \"#1a1a2e\";\n    ctx.fillRect(0, 0, canvas.width, canvas.height);\n    ctx.fillStyle = \"#00ff88\";\n    ctx.fillRect(player.x, player.y, player.size, player.size);\n}\n\nfunction gameLoop() {\n    update();\n    draw();\n    requestAnimationFrame(gameLoop);\n}\n\ngameLoop();",
+     quiz:[
+       {q:"What event fires when you press a key?",opts:["keypress","keydown","keyhold","keystart"],ans:1,exp:"keydown fires the moment a key is pressed down."},
+       {q:"Why use a keys object?",opts:["To store score","To track which keys are currently held","To set speed","To draw player"],ans:1,exp:"The keys object tracks multiple keys at once so the player can move diagonally."},
+       {q:"What does the boundary check prevent?",opts:["Slow movement","Player going off screen","Score going negative","Game from starting"],ans:1,exp:"Boundary checks keep the player inside the canvas by limiting x and y values."},
+     ]},
+    {title:"Collision Detection",desc:"Detect when objects touch",
+     intro:{
+       goal:"You're adding enemies and collision detection — the core mechanic of almost every game. You'll learn how to check if two rectangles overlap, which is how most 2D games detect hits, pickups, and game over conditions.",
+       defs:[
+         {k:"collision detection",v:"Code that checks if two objects are overlapping on screen."},
+         {k:"AABB",v:"Axis-Aligned Bounding Box — the standard rectangle collision check used in 2D games."},
+         {k:"Math.random()",v:"Returns a random decimal between 0 and 1. Used to spawn enemies in random positions."},
+         {k:"Math.floor()",v:"Rounds a number down to the nearest whole number."},
+         {k:"array",v:"A list of items. Used here to store multiple enemy objects at once."},
+         {k:"splice()",v:"Removes items from an array. Used to delete an enemy when it's hit or off screen."},
+       ]
+     },
+     code:"const canvas = document.getElementById(\"gameCanvas\");\nconst ctx = canvas.getContext(\"2d\");\ncanvas.width = 800;\ncanvas.height = 600;\n\nconst player = { x: 380, y: 280, size: 40, speed: 4 };\nconst keys = {};\nlet enemies = [];\nlet score = 0;\n\ndocument.addEventListener(\"keydown\", e => keys[e.key] = true);\ndocument.addEventListener(\"keyup\", e => keys[e.key] = false);\n\nfunction spawnEnemy() {\n    enemies.push({\n        x: canvas.width,\n        y: Math.floor(Math.random() * (canvas.height - 40)),\n        size: 35,\n        speed: 2 + Math.random() * 2\n    });\n}\n\nfunction checkCollision(a, b) {\n    return a.x < b.x + b.size &&\n           a.x + a.size > b.x &&\n           a.y < b.y + b.size &&\n           a.y + a.size > b.y;\n}\n\nsetInterval(spawnEnemy, 1500);\n\nfunction gameLoop() {\n    if (keys[\"ArrowUp\"]) player.y = Math.max(0, player.y - player.speed);\n    if (keys[\"ArrowDown\"]) player.y = Math.min(canvas.height - player.size, player.y + player.speed);\n    if (keys[\"ArrowLeft\"]) player.x = Math.max(0, player.x - player.speed);\n    if (keys[\"ArrowRight\"]) player.x = Math.min(canvas.width - player.size, player.x + player.speed);\n\n    enemies.forEach((e, i) => {\n        e.x -= e.speed;\n        if (e.x + e.size < 0) { enemies.splice(i, 1); score++; }\n        if (checkCollision(player, e)) { enemies.splice(i, 1); score = Math.max(0, score - 1); }\n    });\n\n    ctx.fillStyle = \"#1a1a2e\";\n    ctx.fillRect(0, 0, canvas.width, canvas.height);\n    ctx.fillStyle = \"#00ff88\";\n    ctx.fillRect(player.x, player.y, player.size, player.size);\n    enemies.forEach(e => { ctx.fillStyle = \"#ff4466\"; ctx.fillRect(e.x, e.y, e.size, e.size); });\n    ctx.fillStyle = \"white\"; ctx.font = \"24px Arial\";\n    ctx.fillText(\"Score: \" + score, 20, 35);\n\n    requestAnimationFrame(gameLoop);\n}\n\ngameLoop();",
+     quiz:[
+       {q:"What does AABB collision check?",opts:["Circle overlap","Rectangle overlap","Distance between points","Pixel color"],ans:1,exp:"AABB checks if two rectangles overlap using their x, y, width and height values."},
+       {q:"What does splice() do to enemies?",opts:["Adds a new enemy","Moves the enemy","Removes it from the array","Changes its color"],ans:2,exp:"splice() removes the enemy from the array so it disappears from the game."},
+       {q:"What does Math.random() return?",opts:["A whole number","0 to 1 decimal","A boolean","The current time"],ans:1,exp:"Math.random() returns a random decimal between 0 and 1, useful for random positions."},
+     ]},
+    {title:"Score & Lives",desc:"Track player progress and game state",
+     intro:{
+       goal:"You're adding a complete game state system — score, lives, game over, and restart. This turns your prototype into an actual game with stakes. You'll also learn how to draw a UI on the canvas and handle game state transitions.",
+       defs:[
+         {k:"game state",v:"The current status of the game — playing, game over, paused, etc."},
+         {k:"lives",v:"How many chances the player has before game over."},
+         {k:"HUD",v:"Heads Up Display — the score, lives, and info drawn on screen during gameplay."},
+         {k:"clearInterval()",v:"Stops a setInterval timer. Used to stop spawning enemies on game over."},
+         {k:"ctx.globalAlpha",v:"Sets transparency for drawing. 0 = invisible, 1 = fully visible."},
+         {k:"restart",v:"Resetting all game variables back to starting values to play again."},
+       ]
+     },
+     code:"const canvas = document.getElementById(\"gameCanvas\");\nconst ctx = canvas.getContext(\"2d\");\ncanvas.width = 800;\ncanvas.height = 600;\n\nlet player, enemies, score, lives, gameOver, spawnTimer;\n\nfunction init() {\n    player = { x: 380, y: 280, size: 40, speed: 4 };\n    enemies = [];\n    score = 0;\n    lives = 3;\n    gameOver = false;\n    if (spawnTimer) clearInterval(spawnTimer);\n    spawnTimer = setInterval(spawnEnemy, 1500);\n}\n\nconst keys = {};\ndocument.addEventListener(\"keydown\", e => {\n    keys[e.key] = true;\n    if (e.key === \" \" && gameOver) init();\n});\ndocument.addEventListener(\"keyup\", e => keys[e.key] = false);\n\nfunction spawnEnemy() {\n    if (!gameOver) enemies.push({ x: canvas.width, y: Math.floor(Math.random() * 560), size: 35, speed: 2 + Math.random() * 3 });\n}\n\nfunction checkCollision(a, b) {\n    return a.x < b.x + b.size && a.x + a.size > b.x && a.y < b.y + b.size && a.y + a.size > b.y;\n}\n\nfunction drawHUD() {\n    ctx.fillStyle = \"white\"; ctx.font = \"22px Arial\";\n    ctx.fillText(\"Score: \" + score, 20, 35);\n    ctx.fillText(\"Lives: \" + \"♥ \".repeat(lives), 20, 65);\n}\n\nfunction drawGameOver() {\n    ctx.fillStyle = \"rgba(0,0,0,0.6)\";\n    ctx.fillRect(0, 0, canvas.width, canvas.height);\n    ctx.fillStyle = \"#ff4466\"; ctx.font = \"bold 64px Arial\"; ctx.textAlign = \"center\";\n    ctx.fillText(\"GAME OVER\", canvas.width / 2, canvas.height / 2 - 20);\n    ctx.fillStyle = \"white\"; ctx.font = \"28px Arial\";\n    ctx.fillText(\"Score: \" + score + \" — Press SPACE to restart\", canvas.width / 2, canvas.height / 2 + 40);\n    ctx.textAlign = \"left\";\n}\n\nfunction gameLoop() {\n    ctx.fillStyle = \"#1a1a2e\";\n    ctx.fillRect(0, 0, canvas.width, canvas.height);\n    if (!gameOver) {\n        if (keys[\"ArrowUp\"]) player.y = Math.max(0, player.y - player.speed);\n        if (keys[\"ArrowDown\"]) player.y = Math.min(560, player.y + player.speed);\n        if (keys[\"ArrowLeft\"]) player.x = Math.max(0, player.x - player.speed);\n        if (keys[\"ArrowRight\"]) player.x = Math.min(760, player.x + player.speed);\n        enemies.forEach((e, i) => {\n            e.x -= e.speed;\n            if (e.x + e.size < 0) { enemies.splice(i, 1); score++; }\n            if (checkCollision(player, e)) { enemies.splice(i, 1); lives--; if (lives <= 0) gameOver = true; }\n        });\n        ctx.fillStyle = \"#00ff88\"; ctx.fillRect(player.x, player.y, player.size, player.size);\n        enemies.forEach(e => { ctx.fillStyle = \"#ff4466\"; ctx.fillRect(e.x, e.y, e.size, e.size); });\n        drawHUD();\n    } else { drawGameOver(); }\n    requestAnimationFrame(gameLoop);\n}\n\ninit(); gameLoop();",
+     quiz:[
+       {q:"What does pressing SPACE do on game over?",opts:["Pauses game","Calls init() to restart","Adds a life","Nothing"],ans:1,exp:"When gameOver is true, pressing SPACE calls init() which resets all game variables."},
+       {q:"What is a HUD?",opts:["A type of enemy","On-screen game info like score and lives","The game loop","A collision check"],ans:1,exp:"HUD stands for Heads Up Display — the score, lives and info shown during gameplay."},
+       {q:"What does clearInterval() do?",opts:["Clears the canvas","Stops a repeating timer","Removes enemies","Resets score"],ans:1,exp:"clearInterval() stops a setInterval so enemies stop spawning on game over."},
+     ]},
+    {title:"Final Game",desc:"Your complete polished browser game",
+     intro:{
+       goal:"This is your complete game — everything combined into one polished build with smooth difficulty scaling, visual polish, and a high score system. When you finish typing this you'll have a fully playable browser game you built from scratch.",
+       defs:[
+         {k:"difficulty scaling",v:"Making the game progressively harder over time — faster enemies, more spawns."},
+         {k:"localStorage",v:"Browser storage that saves data even after you close the tab. Used for high scores."},
+         {k:"ctx.arc()",v:"Draws a circle on the canvas. Takes x, y, radius, start angle, end angle."},
+         {k:"performance.now()",v:"Returns the current time in milliseconds. Used for precise timing."},
+         {k:"Math.min()",v:"Returns the smaller of two numbers. Useful for capping values."},
+         {k:"high score",v:"The best score ever achieved, saved to localStorage so it persists between sessions."},
+       ]
+     },
+     code:"const canvas = document.getElementById(\"gameCanvas\");\nconst ctx = canvas.getContext(\"2d\");\ncanvas.width = 800; canvas.height = 600;\n\nlet player, enemies, score, lives, gameOver, spawnTimer, highScore;\nhighScore = parseInt(localStorage.getItem(\"highScore\")) || 0;\n\nfunction init() {\n    player = { x: 80, y: 280, size: 36, speed: 5 };\n    enemies = []; score = 0; lives = 3; gameOver = false;\n    if (spawnTimer) clearInterval(spawnTimer);\n    spawnTimer = setInterval(() => {\n        const speed = 2.5 + Math.min(score * 0.1, 6);\n        enemies.push({ x: canvas.width, y: Math.floor(Math.random() * 540), size: 32, speed });\n    }, Math.max(600, 1500 - score * 10));\n}\n\nconst keys = {};\ndocument.addEventListener(\"keydown\", e => { keys[e.key] = true; if (e.key === \" \" && gameOver) init(); });\ndocument.addEventListener(\"keyup\", e => keys[e.key] = false);\n\nfunction collides(a, b) {\n    return a.x < b.x + b.size && a.x + a.size > b.x && a.y < b.y + b.size && a.y + a.size > b.y;\n}\n\nfunction drawPlayer() {\n    ctx.fillStyle = \"#00ff88\";\n    ctx.beginPath();\n    ctx.arc(player.x + player.size / 2, player.y + player.size / 2, player.size / 2, 0, Math.PI * 2);\n    ctx.fill();\n}\n\nfunction gameLoop() {\n    ctx.fillStyle = \"#0a0a1a\"; ctx.fillRect(0, 0, canvas.width, canvas.height);\n    if (!gameOver) {\n        if (keys[\"ArrowUp\"]) player.y = Math.max(0, player.y - player.speed);\n        if (keys[\"ArrowDown\"]) player.y = Math.min(564, player.y + player.speed);\n        if (keys[\"ArrowLeft\"]) player.x = Math.max(0, player.x - player.speed);\n        if (keys[\"ArrowRight\"]) player.x = Math.min(764, player.x + player.speed);\n        enemies.forEach((e, i) => {\n            e.x -= e.speed;\n            if (e.x + e.size < 0) { enemies.splice(i, 1); score++; if (score > highScore) { highScore = score; localStorage.setItem(\"highScore\", highScore); } }\n            if (collides(player, e)) { enemies.splice(i, 1); lives--; if (lives <= 0) { gameOver = true; clearInterval(spawnTimer); } }\n        });\n        drawPlayer();\n        enemies.forEach(e => { ctx.fillStyle = \"#ff4466\"; ctx.beginPath(); ctx.arc(e.x + e.size/2, e.y + e.size/2, e.size/2, 0, Math.PI*2); ctx.fill(); });\n        ctx.fillStyle = \"white\"; ctx.font = \"bold 22px Arial\";\n        ctx.fillText(\"Score: \" + score, 20, 35);\n        ctx.fillText(\"Best: \" + highScore, 20, 62);\n        ctx.fillText(\"♥ \".repeat(lives), canvas.width - 120, 35);\n    } else {\n        ctx.fillStyle = \"rgba(0,0,0,0.7)\"; ctx.fillRect(0, 0, canvas.width, canvas.height);\n        ctx.textAlign = \"center\";\n        ctx.fillStyle = \"#ff4466\"; ctx.font = \"bold 72px Arial\"; ctx.fillText(\"GAME OVER\", canvas.width/2, 220);\n        ctx.fillStyle = \"#00ff88\"; ctx.font = \"32px Arial\"; ctx.fillText(\"Score: \" + score, canvas.width/2, 290);\n        ctx.fillStyle = \"white\"; ctx.font = \"24px Arial\"; ctx.fillText(\"Best: \" + highScore, canvas.width/2, 330);\n        ctx.fillStyle = \"#aaa\"; ctx.font = \"20px Arial\"; ctx.fillText(\"Press SPACE to play again\", canvas.width/2, 390);\n        ctx.textAlign = \"left\";\n    }\n    requestAnimationFrame(gameLoop);\n}\n\ninit(); gameLoop();",
+     quiz:[
+       {q:"Where is the high score saved?",opts:["A variable","Google Sheets","localStorage","A cookie"],ans:2,exp:"localStorage saves data in the browser so the high score persists even after closing the tab."},
+       {q:"What does ctx.arc() draw?",opts:["A rectangle","A triangle","A circle","A line"],ans:2,exp:"ctx.arc() draws a circular arc — used here to draw round players and enemies."},
+       {q:"What is difficulty scaling?",opts:["Changing the canvas size","Making the game harder over time","Adding more lives","Changing colors"],ans:1,exp:"Difficulty scaling increases enemy speed and spawn rate as the score goes up."},
+     ]},
   ]},
   "Discord Bot":{icon:"🤝",lang:"python",lessons:[
     {title:"Bot Basics",desc:"Your first Discord bot",
@@ -596,6 +728,52 @@ let S = {
 function showScreen(id){
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
+  const tutorScreens=["lesson-intro","typing-lesson","quiz-screen"];
+  const btn=document.getElementById("tutor-btn");
+  btn.style.display=tutorScreens.includes(id)?"flex":"none";
+}
+
+// ── AI TUTOR ─────────────────────────────────────────────────
+let tutorOpen=false;
+function toggleTutor(){
+  tutorOpen=!tutorOpen;
+  document.getElementById("tutor-panel").style.display=tutorOpen?"flex":"none";
+  if(tutorOpen) document.getElementById("tutor-q").focus();
+}
+
+async function askTutor(){
+  const input=document.getElementById("tutor-q");
+  const q=input.value.trim();
+  if(!q) return;
+  input.value="";
+  const msgs=document.getElementById("tutor-msgs");
+  msgs.innerHTML+=`<div class="tmsg user">${q}</div>`;
+  msgs.innerHTML+=`<div class="tmsg thinking" id="tutor-thinking">Thinking...</div>`;
+  msgs.scrollTop=msgs.scrollHeight;
+
+  const lesson=S.track&&S.curLesson!==undefined?S.track.lessons[S.curLesson]:null;
+  const context=lesson?`The student is currently on a lesson called "${lesson.title}" (${lesson.desc}). The code they are studying is:\n\`\`\`\n${lesson.code}\n\`\`\``:"The student is using a coding learning platform.";
+
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-20250514",
+        max_tokens:1000,
+        system:`You are a friendly coding tutor helping a student learn to code. ${context}\n\nKeep answers short, clear and encouraging. Use simple language. If explaining code, reference the specific lines from the lesson. Never write more than 4 sentences.`,
+        messages:[{role:"user",content:q}]
+      })
+    });
+    const data=await res.json();
+    const reply=data.content&&data.content[0]?data.content[0].text:"Sorry, I couldn't get an answer. Try again!";
+    document.getElementById("tutor-thinking").remove();
+    msgs.innerHTML+=`<div class="tmsg bot">${reply}</div>`;
+  }catch(e){
+    document.getElementById("tutor-thinking").remove();
+    msgs.innerHTML+=`<div class="tmsg bot">Couldn't connect right now. Check your internet and try again.</div>`;
+  }
+  msgs.scrollTop=msgs.scrollHeight;
 }
 
 // ── SHEET API ────────────────────────────────────────────────
