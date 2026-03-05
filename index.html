@@ -353,7 +353,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
   <div id="t-overview" class="tc on">
     <div class="icard"><h3>🎯 Your Skool Workflow</h3><p>1. Add students to Google Sheet (Code, Name, Track, Class, Status)<br>2. DM each student their code on Skool<br>3. Post the CodeCoach link in Skool<br>4. Students enter code → track loads automatically<br>5. Watch progress update in your sheet in real time</p></div>
     <div class="icard"><h3>✅ Sheet Connected</h3><p>Your Google Apps Script Web App is live. Student logins and progress saves are working.</p><div class="cs">STUD01 · STUD02 ready to go</div></div>
-    <div class="icard"><h3>🌐 Host on Netlify (Free)</h3><p>Drag this HTML file to netlify.com/drop — you get a live link in 2 minutes. Post it on Skool.</p></div>
+    <div class="icard"><h3>📊 Quick Stats</h3><p>Go to the Students tab to see all students, their XP, lesson progress and last active date — live from your Google Sheet.</p></div>
   </div>
   <div id="t-students" class="tc">
     <p style="font-family:var(--mono);font-size:.8rem;color:var(--muted);margin-bottom:1rem">Live from your Google Sheet:</p>
@@ -370,9 +370,10 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
     <div id="rlist"></div>
     <button class="bsm" onclick="loadRewards()" style="margin-top:1rem">🔄 Refresh</button>
   </div>
+  <div id="t-setup" class="tc">
     <div class="icard"><h3>➕ Adding Students</h3><p>Open your Google Sheet → add row: Code | Name | Track | Class | Active<br>Use any code (STUD03, CC-005, initials — anything unique)<br>DM them the code on Skool → they enter it → done</p></div>
     <div class="icard"><h3>📋 Available Tracks</h3><p>AI Bot · Website · Game · Online Store · Mobile App · Discord Bot · Data Dashboard · Automation</p></div>
-    <div class="icard"><h3>🔗 Your Apps Script URL</h3><div class="cs" style="font-size:.7rem">https://script.google.com/macros/s/AKfycbxiPLuLwzIrXOJImQbn7C1PSGHobtGNnuZ_YWHPmxl1t4UI9qcAJlwDwujxqpXj9J2_4Q/exec</div></div>
+    <div class="icard"><h3>🔗 Your Apps Script URL</h3><div class="cs" style="font-size:.7rem">https://script.google.com/macros/s/AKfycbyNEdgq2-bvw7rTWG4In73pWrqG8uLe9sR1ag1bjUZluIq_V5yMwwhA7mNmjdCZyBW_hw/exec</div></div>
   </div>
   <button class="btn btn-s" onclick="showScreen('landing')" style="width:auto;padding:.6rem 1.5rem;margin-top:2rem">← Back to Home</button>
 </div>
