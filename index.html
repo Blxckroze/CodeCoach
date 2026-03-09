@@ -1616,15 +1616,11 @@ function renderCode(){
     ci+=line.length+1;
   });
   document.getElementById("cdisplay").innerHTML=html;
-  // Scroll both panels to keep current line centered
+  // Scroll study panel to keep current line visible (no scrollIntoView — breaks typing)
   const curEl=document.querySelector(".cl.cur");
   if(curEl){
-    curEl.scrollIntoView({block:"center",behavior:"smooth"});
-    // Also sync the input panel scroll
-    const inp=document.getElementById("tinput");
-    const lineH=parseFloat(getComputedStyle(inp).lineHeight)||24;
-    const curLine=target.slice(0,typed.length).split("\n").length-1;
-    inp.scrollTop=Math.max(0,(curLine-3)*lineH);
+    const pbody=curEl.closest(".pbody");
+    if(pbody) pbody.scrollTop=curEl.offsetTop-pbody.offsetHeight/2;
   }
   const pct=Math.round((typed.length/target.length)*100);
   document.getElementById("pf").style.width=pct+"%";
