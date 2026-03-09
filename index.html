@@ -109,8 +109,8 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
 .tarea { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
 .tarea.with-preview { grid-template-columns: 1fr 1fr; }
 @media(max-width:700px){.tarea{grid-template-columns:1fr}}
-.ppanel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
-.ppanel iframe { width: 100%; border: none; height: 380px; background: #0a0a0f; }
+.ppanel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; grid-column: 1 / -1; }
+.ppanel iframe { width: 100%; border: none; height: 160px; background: #0a0a0f; }
 .copy-code-bar { display: flex; align-items: center; justify-content: space-between; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: .75rem 1.25rem; margin-top: 1rem; }
 .copy-code-bar span { font-family: var(--mono); font-size: .8rem; color: var(--muted); }
 .copy-code-bar button { background: var(--accent); color: #000; border: none; border-radius: 8px; padding: .5rem 1.25rem; font-family: var(--mono); font-size: .8rem; font-weight: 700; cursor: pointer; }
@@ -371,12 +371,13 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
       <span class="streak-mult" id="streak-mult"></span>
     </div>
     <div class="tarea" id="tarea">
-      <div class="cpanel" style="position:relative">
-        <div class="phdr"><span>⌨️ Type the code</span><span style="color:var(--accent)">char by char</span></div>
-        <div class="pbody" style="padding:0;position:relative">
-          <div class="cdisplay" id="cdisplay" style="position:absolute;top:0;left:0;width:100%;padding:1.25rem;pointer-events:none;z-index:1"></div>
-          <textarea class="tinput" id="tinput" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="Start typing..." style="position:relative;z-index:2;background:transparent;color:transparent;caret-color:var(--accent)"></textarea>
-        </div>
+      <div class="cpanel">
+        <div class="phdr"><span>📖 Study this code</span></div>
+        <div class="pbody"><div class="cdisplay" id="cdisplay"></div></div>
+      </div>
+      <div class="ipanel">
+        <div class="phdr"><span>⌨️ Type it here</span><span style="color:var(--accent)">char by char</span></div>
+        <div class="pbody" style="padding:0"><textarea class="tinput" id="tinput" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="Start typing the code on the left..."></textarea></div>
       </div>
       <div class="ppanel" id="preview-panel" style="display:none">
         <div class="phdr"><span>🖥️ Live Output</span><span style="color:var(--accent)">updates as you type</span></div>
