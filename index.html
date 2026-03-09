@@ -1616,12 +1616,6 @@ function renderCode(){
     ci+=line.length+1;
   });
   document.getElementById("cdisplay").innerHTML=html;
-  // Scroll study panel to keep current line visible (no scrollIntoView — breaks typing)
-  const curEl=document.querySelector(".cl.cur");
-  if(curEl){
-    const pbody=curEl.closest(".pbody");
-    if(pbody) pbody.scrollTop=curEl.offsetTop-pbody.offsetHeight/2;
-  }
   const pct=Math.round((typed.length/target.length)*100);
   document.getElementById("pf").style.width=pct+"%";
   document.getElementById("ppct").textContent=pct+"%";
