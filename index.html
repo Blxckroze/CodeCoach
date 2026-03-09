@@ -404,6 +404,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
       <div class="si"><div class="v" id="sch">0</div><div class="l">CHARS</div></div>
     </div>
     <button class="btn btn-p" id="nxtbtn" onclick="goToLessonQuiz()">Take the Quiz 🧠</button>
+    <p id="auto-adv" style="font-family:var(--mono);font-size:.75rem;color:var(--muted);margin-top:.75rem;display:none">Moving to quiz in <span id="adv-count">2</span>s...</p>
     <button class="btn btn-s" onclick="showScreen('student-dash')" style="margin-top:.75rem">Back to Dashboard</button>
   </div>
 </div>
@@ -1498,6 +1499,11 @@ function goToTyping(){
     previewPanel.style.display="block";
     copyBar.style.display="none";
     updatePreview("");
+  } else if(isPython){
+    tarea.classList.add("with-preview");
+    previewPanel.style.display="block";
+    copyBar.style.display="none";
+    updatePythonPreview("");
   } else {
     tarea.classList.remove("with-preview");
     previewPanel.style.display="none";
@@ -1527,10 +1533,55 @@ function updatePreview(code){
   }catch(e){}
 }
 
-let previewTimer=null;
+function updatePythonPreview(code){
+  const frame=document.getElementById("preview-frame");
+  if(!frame) return;
+  const lines=code.split("\n");
+  const vars={};
+  let out="";
+  for(const line of lines){
+    const t=line.trim();
+    // variable assignment
+    const am=t.match(/^(\w+)\s*=\s*(.+)$/);
+    if(am&&!t.startsWith("print")){
+      let v=am[2].trim();
+      if((v.startsWith('"')&&v.endsWith('"'))||(v.startsWith("'")&&v.endsWith("'"))) v=v.slice(1,-1);
+      else if(v.startsWith('f"')||v.startsWith("f'")){ v=v.slice(2,-1).replace(/\{(\w+)\}/g,(_,k)=>vars[k]??k); }
+      vars[am[1]]=v;
+    }
+    // print statements
+    const pm=t.match(/^print\((.+)\)$/);
+    if(pm){
+      let inner=pm[1];
+      // f-string
+      if(inner.startsWith('f"')||inner.startsWith("f'")){
+        inner=inner.slice(2,-1).replace(/\{(\w+)\}/g,(_,k)=>vars[k]??k);
+      } else {
+        // strip quotes, resolve vars, handle comma-sep args
+        inner=inner.split(",").map(p=>{
+          p=p.trim();
+          if((p.startsWith('"')&&p.endsWith('"'))||(p.startsWith("'")&&p.endsWith("'"))) return p.slice(1,-1);
+          return vars[p]??p;
+        }).join(" ");
+      }
+      out+=inner+"\n";
+    }
+  }
+  const body=`<body style="margin:0;background:#0a0a0f;color:#00ff88;font-family:monospace;font-size:.82rem;padding:1rem;line-height:1.8">
+    <div style="color:#555;font-size:.7rem;margin-bottom:.75rem;letter-spacing:1px">▶ TERMINAL OUTPUT</div>
+    <pre style="margin:0;white-space:pre-wrap">${out||'<span style="color:#333">// output appears as you type...</span>'}</pre>
+  </body>`;
+  frame.srcdoc=`<!DOCTYPE html><html><head></head>${body}</html>`;
+}
+
+
 function schedulePreview(){
   if(previewTimer) clearTimeout(previewTimer);
-  previewTimer=setTimeout(()=>updatePreview(S.typed),600);
+  const lang=S.track.lang;
+  previewTimer=setTimeout(()=>{
+    if(lang==="python") updatePythonPreview(S.typed);
+    else updatePreview(S.typed);
+  },400);
 }
 
 function copyCode(){
@@ -1598,6 +1649,7 @@ function handleType(e){
   // Live preview for html/js tracks
   const lang=S.track.lang;
   if(lang==="html"||lang==="javascript") schedulePreview();
+  if(lang==="python") schedulePreview();
   // Show done button only when 90%+ typed
   const pct=S.typed.length/target.length;
   if(pct>=0.9) document.getElementById("done-btn").style.display="block";
@@ -1665,7 +1717,15 @@ function completeLesson(){
   if(isLastLesson){
     setTimeout(()=>showScreen("reward-screen"),2000);
   } else {
-    setTimeout(()=>showScreen("lesson-complete"),1500);
+    setTimeout(()=>{
+      showScreen("lesson-complete");
+      // Show countdown
+      const advEl=document.getElementById("auto-adv");
+      const countEl=document.getElementById("adv-count");
+      if(advEl){ advEl.style.display="block"; let c=2; countEl.textContent=c; const iv=setInterval(()=>{c--;countEl.textContent=c;if(c<=0)clearInterval(iv);},1000); }
+      // Auto-advance to quiz after 2.5s — no button click needed
+      setTimeout(()=>goToLessonQuiz(), 2500);
+    },1500);
   }
 }
 
