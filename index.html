@@ -107,11 +107,10 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
 .ltitle { font-size: 1.25rem; font-weight: 800; }
 .lmeta { display: flex; gap: 1rem; font-family: var(--mono); font-size: .8rem; color: var(--muted); }
 .tarea { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-.tarea.with-preview { grid-template-columns: 1fr 1fr 1fr; }
-@media(max-width:900px){.tarea.with-preview{grid-template-columns:1fr 1fr}}
+.tarea.with-preview { grid-template-columns: 1fr 1fr; }
 @media(max-width:700px){.tarea{grid-template-columns:1fr}.tarea.with-preview{grid-template-columns:1fr}}
-.ppanel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
-.ppanel iframe { width: 100%; height: 100%; border: none; min-height: 320px; background: white; }
+.ppanel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; grid-column: 1 / -1; }
+.ppanel iframe { width: 100%; border: none; height: 160px; background: #0a0a0f; }
 .copy-code-bar { display: flex; align-items: center; justify-content: space-between; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: .75rem 1.25rem; margin-top: 1rem; }
 .copy-code-bar span { font-family: var(--mono); font-size: .8rem; color: var(--muted); }
 .copy-code-bar button { background: var(--accent); color: #000; border: none; border-radius: 8px; padding: .5rem 1.25rem; font-family: var(--mono); font-size: .8rem; font-weight: 700; cursor: pointer; }
@@ -1617,6 +1616,16 @@ function renderCode(){
     ci+=line.length+1;
   });
   document.getElementById("cdisplay").innerHTML=html;
+  // Scroll both panels to keep current line centered
+  const curEl=document.querySelector(".cl.cur");
+  if(curEl){
+    curEl.scrollIntoView({block:"center",behavior:"smooth"});
+    // Also sync the input panel scroll
+    const inp=document.getElementById("tinput");
+    const lineH=parseFloat(getComputedStyle(inp).lineHeight)||24;
+    const curLine=target.slice(0,typed.length).split("\n").length-1;
+    inp.scrollTop=Math.max(0,(curLine-3)*lineH);
+  }
   const pct=Math.round((typed.length/target.length)*100);
   document.getElementById("pf").style.width=pct+"%";
   document.getElementById("ppct").textContent=pct+"%";
