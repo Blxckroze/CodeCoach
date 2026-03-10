@@ -118,7 +118,8 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
 .copy-code-bar button.copied { background: var(--surface); color: var(--accent); border: 1px solid var(--accent); }
 .cpanel, .ipanel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
 .phdr { padding: .75rem 1rem; background: var(--surface2); border-bottom: 1px solid var(--border); font-family: var(--mono); font-size: .75rem; color: var(--muted); display: flex; justify-content: space-between; }
-.pbody { padding: 1.25rem; min-height: 320px; max-height: 520px; overflow-y: auto; }
+.pbody { padding: 1.25rem; min-height: 320px; }
+.cpanel { overflow-y: auto; max-height: 580px; }
 .cdisplay { font-family: var(--mono); font-size: .85rem; line-height: 1.8; white-space: pre; overflow-x: auto; }
 .cl { display: block; padding: 1px 0; }
 .cl.cur { background: rgba(0,255,136,.08); border-left: 2px solid var(--accent); padding-left: 6px; margin-left: -8px; }
@@ -1570,13 +1571,15 @@ function renderCode(){
   // Auto-scroll left panel to keep current line in view (without moving the page)
   const curLine=cdisplay.querySelector(".cur");
   if(curLine){
-    const panel=cdisplay.closest(".pbody")||cdisplay.parentElement;
-    const lineTop=curLine.offsetTop;
-    const lineBottom=lineTop+curLine.offsetHeight;
-    const panelTop=panel.scrollTop;
-    const panelBottom=panelTop+panel.clientHeight;
-    if(lineTop<panelTop||lineBottom>panelBottom){
-      panel.scrollTop=lineTop-(panel.clientHeight/2)+(curLine.offsetHeight/2);
+    const panel=cdisplay.closest(".cpanel");
+    if(panel){
+      const lineTop=curLine.offsetTop;
+      const lineBottom=lineTop+curLine.offsetHeight;
+      const panelTop=panel.scrollTop;
+      const panelBottom=panelTop+panel.clientHeight;
+      if(lineTop<panelTop||lineBottom>panelBottom){
+        panel.scrollTop=lineTop-(panel.clientHeight/2)+(curLine.offsetHeight/2);
+      }
     }
   }
   const pct=Math.round((typed.length/target.length)*100);
