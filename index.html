@@ -389,7 +389,6 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
       <span>📋 Copy this lesson's code to build your project locally</span>
       <button id="copy-btn" onclick="copyCode()">Copy Code</button>
     </div>
-    <button class="btn btn-s" id="done-btn" onclick="completeLesson()" style="display:none;margin-top:1rem;width:auto;padding:.875rem 2rem">Almost there — skip last few chars →</button>
   </div>
 </div>
 
@@ -1480,7 +1479,6 @@ function startLesson(idx){
 
 function goToTyping(){
   streak=0; updateStreak();
-  document.getElementById("done-btn").style.display="none";
   const l=S.track.lessons[S.curLesson];
   const lang=S.track.lang;
   document.getElementById("ltitle").textContent="Lesson "+(S.curLesson+1)+": "+l.title;
@@ -1624,9 +1622,6 @@ function handleType(e){
   // Live preview for html/js tracks
   const lang=S.track.lang;
   if(lang==="html"||lang==="javascript") schedulePreview();
-  // Show done button only when 90%+ typed
-  const pct=S.typed.length/target.length;
-  if(pct>=0.9) document.getElementById("done-btn").style.display="block";
   if(S.typed===target) completeLesson();
 }
 
