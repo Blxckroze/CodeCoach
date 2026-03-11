@@ -116,15 +116,15 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
 .copy-code-bar span { font-family: var(--mono); font-size: .8rem; color: var(--muted); }
 .copy-code-bar button { background: var(--accent); color: #000; border: none; border-radius: 8px; padding: .5rem 1.25rem; font-family: var(--mono); font-size: .8rem; font-weight: 700; cursor: pointer; }
 .copy-code-bar button.copied { background: var(--surface); color: var(--accent); border: 1px solid var(--accent); }
-.cpanel, .ipanel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; }
-.phdr { padding: .75rem 1rem; background: var(--surface2); border-bottom: 1px solid var(--border); font-family: var(--mono); font-size: .75rem; color: var(--muted); display: flex; justify-content: space-between; flex-shrink: 0; }
-.pbody { padding: 1.25rem; min-height: 320px; overflow-y: auto; overflow-x: auto; flex: 1; }
-.cdisplay { font-family: var(--mono); font-size: .85rem; line-height: 1.8; white-space: pre; }
+.cpanel, .ipanel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+.phdr { padding: .75rem 1rem; background: var(--surface2); border-bottom: 1px solid var(--border); font-family: var(--mono); font-size: .75rem; color: var(--muted); display: flex; justify-content: space-between; }
+.pbody { padding: 1.25rem; min-height: 320px; }
+.cdisplay { font-family: var(--mono); font-size: .85rem; line-height: 1.8; white-space: pre; overflow-x: auto; }
 .cl { display: block; padding: 1px 0; }
 .cl.cur { background: rgba(0,255,136,.08); border-left: 2px solid var(--accent); padding-left: 6px; margin-left: -8px; }
 .cp { color: var(--muted); }
 .cc { color: var(--accent); }
-.cw { color: #fff; background: rgba(255,68,102,.5); border-radius: 3px; outline: 2px solid var(--danger); font-weight: 700; }
+.cw { color: var(--danger); background: rgba(255,68,102,.15); }
 .cx { border-left: 2px solid var(--accent); animation: blink 1s infinite; }
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 .tinput { width: 100%; height: 320px; background: transparent; border: none; outline: none; color: var(--text); font-family: var(--mono); font-size: .85rem; line-height: 1.8; resize: none; caret-color: var(--accent); white-space: pre; padding: 1.25rem; }
@@ -299,6 +299,9 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
     <div class="card" onclick="showScreen('student-login')">
       <div class="icon">🚀</div><h3>Self-Learn</h3><p>Enter your access code</p>
     </div>
+    <div class="card" onclick="window.open('https://www.youtube.com/@localbotbuilders','_blank')" style="border-color:rgba(0,255,136,0.4)">
+      <div class="icon">⬇️</div><h3>Install Ollama</h3><p>Free setup guide — watch before you start</p>
+    </div>
   </div>
 </div>
 
@@ -389,6 +392,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); min-
       <span>📋 Copy this lesson's code to build your project locally</span>
       <button id="copy-btn" onclick="copyCode()">Copy Code</button>
     </div>
+    <button class="btn btn-s" id="done-btn" onclick="completeLesson()" style="display:none;margin-top:1rem;width:auto;padding:.875rem 2rem">Almost there — skip last few chars →</button>
   </div>
 </div>
 
@@ -1479,6 +1483,7 @@ function startLesson(idx){
 
 function goToTyping(){
   streak=0; updateStreak();
+  document.getElementById("done-btn").style.display="none";
   const l=S.track.lessons[S.curLesson];
   const lang=S.track.lang;
   document.getElementById("ltitle").textContent="Lesson "+(S.curLesson+1)+": "+l.title;
@@ -1565,20 +1570,9 @@ function renderCode(){
   });
   const cdisplay=document.getElementById("cdisplay");
   cdisplay.innerHTML=html;
-  // Auto-scroll left panel to keep current line in view (without moving the page)
+  // Auto-scroll left panel to keep current line in view
   const curLine=cdisplay.querySelector(".cur");
-  if(curLine){
-    const panel=cdisplay.closest(".pbody");
-    if(panel){
-      const lineTop=curLine.offsetTop;
-      const lineBottom=lineTop+curLine.offsetHeight;
-      const panelTop=panel.scrollTop;
-      const panelBottom=panelTop+panel.clientHeight;
-      if(lineTop<panelTop||lineBottom>panelBottom){
-        panel.scrollTop=lineTop-(panel.clientHeight/2)+(curLine.offsetHeight/2);
-      }
-    }
-  }
+  if(curLine) curLine.scrollIntoView({block:"center",behavior:"smooth"});
   const pct=Math.round((typed.length/target.length)*100);
   document.getElementById("pf").style.width=pct+"%";
   document.getElementById("ppct").textContent=pct+"%";
@@ -1622,6 +1616,9 @@ function handleType(e){
   // Live preview for html/js tracks
   const lang=S.track.lang;
   if(lang==="html"||lang==="javascript") schedulePreview();
+  // Show done button only when 90%+ typed
+  const pct=S.typed.length/target.length;
+  if(pct>=0.9) document.getElementById("done-btn").style.display="block";
   if(S.typed===target) completeLesson();
 }
 
